@@ -75,7 +75,10 @@ jobs:
       - name: generate matrix
         id: generate-matrix
         run: |
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/matrix.php
+          # github.ref is either refs/heads/<branch_name> or refs/tags/<tag_name>
+          REF=$(php -r '$r="${{ github.ref }}";echo preg_replace("#^.+/.+/#","",$r);')
+          echo "$REF"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/matrix.php"
           touch inputs.yml
           echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
           echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
@@ -159,14 +162,15 @@ jobs:
       - name: Configure apache - endtoend test
         if: ${{ matrix.endtoend }}
         run: |
+          REF=$(php -r '$r="${{ github.ref }}";echo preg_replace("#^.+/.+/#","",$r);')
           # apache2 is installed and running by default in ubuntu
           # update dir.conf to use index.php as the primary index doc
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/dir.conf
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/dir.conf"
           sudo cp dir.conf /etc/apache2/mods-enabled/dir.conf
           rm dir.conf
           # this script will create a 000-default.conf file with the pwd as the DocumentRoot
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/000-default.conf
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/apache2.php
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/000-default.conf"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/apache2.php"
           # TODO: this script pretty basic and could probably be replaced with cat 000-default.conf | tr oldtxt newtext
           php apache2.php
           sudo cp 000-default.conf /etc/apache2/sites-enabled/000-default.conf
@@ -208,8 +212,9 @@ jobs:
 
       - name: Preparation
         run: |
+          REF=$(php -r '$r="${{ github.ref }}";echo preg_replace("#^.+/.+/#","",$r);')
           # Add .env file and create artifacts directory
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/.env
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/.env"
           # Artifacts directory must be created after composer install as it would remove the artifacts directory
           mkdir artifacts
           # Shouldn't dev/build flush here
@@ -227,11 +232,12 @@ jobs:
       - name: Tests - End to end
         if: ${{ matrix.endtoend == true }}
         run: |
+          REF=$(php -r '$r="${{ github.ref }}";echo preg_replace("#^.+/.+/#","",$r);')
           # Run behat tests
           if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
           # this script will update behat.yml to work with headless chrome
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/behat-headless.yml
-          wget https://raw.githubusercontent.com/emteknetnz/octopus/main/.github/things/behat.php
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/behat-headless.yml"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$REF/.github/things/behat.php"
           php behat.php
           rm behat.php
           rm behat-headless.yml
