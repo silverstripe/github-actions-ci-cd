@@ -1,0 +1,23 @@
+default:
+  suites: []
+  extensions:
+    SilverStripe\BehatExtension\MinkExtension:
+      default_session: facebook_web_driver
+      javascript_session: facebook_web_driver
+      facebook_web_driver:
+        browser: chrome
+        wd_host: "http://127.0.0.1:9515"
+        capabilities:
+          extra_capabilities:
+            chromeOptions:
+              args:
+                # no sandbox is required to run chromium inside a container https://stackoverflow.com/a/59154049
+                - "--no-sandbox"
+                # run headless within container - removes the need for xvfb
+                - "--headless"
+                # disable gpu is often mentioned as fix after headless chrome suddenly breaks after an update
+                # leaving it in just in case to prevent hard to diagnose errors later
+                - "--disable-gpu"
+      browser_name: chrome
+    SilverStripe\BehatExtension\Extension:
+      screenshot_path: '%paths.base%/artifacts/screenshots'
