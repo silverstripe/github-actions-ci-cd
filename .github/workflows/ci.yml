@@ -32,7 +32,7 @@ on:
       extra_jobs:
         type: string
         required: false
-        default: 'none'
+        default: ''
       run_endtoend:
         type: boolean
         required: false
@@ -87,8 +87,8 @@ jobs:
           echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
           echo "default_jobs:" >> inputs.yml
           echo "${{ inputs.default_jobs }}" >> inputs.yml
-          echo "extra_jobs:" >> inputs.yml
-          echo "${{ inputs.extra_jobs }}" >> inputs.yml
+          if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
+          if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
           cat inputs.yml
           MATRIX_JSON=$(php matrix.php)
           echo "::set-output name=matrix::${MATRIX_JSON}"
