@@ -23,6 +23,9 @@ jobs:
 
 Use the following if your module does not have a `phpcs.xml.dist` file
 
+(or better still, copy paste this [sample phpcs.xml.dist](https://raw.githubusercontent.com/silverstripe/silverstripe-elemental/4/phpcs.xml.dist) file in to your module)
+
+
 ```
 jobs:
   ci:
