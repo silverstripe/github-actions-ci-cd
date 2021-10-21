@@ -197,7 +197,9 @@ jobs:
           BRANCH=$(php -r "echo preg_replace('#^.+/#', '', '${{ github.base_ref }}'?:'${{ github.ref }}');")
           if [[ "$BRANCH" =~ ^[1-9]$ ]] || [[ "$BRANCH" =~ ^[1-9]\.[0-9]+$ ]]; then export COMPOSER_ROOT_VERSION="${BRANCH}.x-dev"; elif [[ "$BRANCH" =~ ^[1-9]\.[0-9]+\.[0-9]+ ]]; then export COMPOSER_ROOT_VERSION="${BRANCH}"; else export COMPOSER_ROOT_VERSION="dev-${BRANCH}"; fi
           echo "COMPOSER_ROOT_VERSION is $COMPOSER_ROOT_VERSION"
-          # TODO: hardecoded version of installer
+          # TODO: hardcoded to installer, need to allow "self" for recipes/installer runs
+          INSTALLER_VERSION=4.x-dev
+          if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
           composer require silverstripe/installer:4.9.x-dev --no-update --prefer-dist
           composer require silverstripe/recipe-testing:^1 --no-update --prefer-dist
           if [ ${{ matrix.phplinting }} ]; then
