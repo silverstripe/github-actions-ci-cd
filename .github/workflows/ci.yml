@@ -310,9 +310,8 @@ jobs:
           shasum -a 256 -c codecov-linux.SHA256SUM
           chmod +x codecov-linux
           phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml
-          # TODO: uncomment so that it uploads
-          # ./codecov-linux -f coverage.xml;
-          # echo "coverage.xml generated and uploaded to codecov"
+          ./codecov-linux -f coverage.xml;
+          echo "coverage.xml generated and uploaded to codecov"
 
       - name: Copy artifacts
         if: always()
