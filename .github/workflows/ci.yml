@@ -200,15 +200,17 @@ jobs:
           # TODO: hardcoded to installer, need to allow "self" for recipes/installer runs
           INSTALLER_VERSION=4.x-dev
           if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
-          composer require silverstripe/installer:4.9.x-dev --no-update --prefer-dist
-          composer require silverstripe/recipe-testing:^1 --no-update --prefer-dist
+          echo "INSTALLER_VERSION is $INSTALLER_VERSION"
+          composer require silverstripe/installer:$INSTALLER_VERSION --no-update
+          composer require silverstripe/recipe-testing:^1 --no-update
           if [ ${{ matrix.phplinting }} ]; then
-            composer require silverstripe/cow:dev-master --no-update --prefer-dist
+            composer require silverstripe/cow:dev-master --no-update
           fi
           if [ "${{ inputs.require_extra }}" != "" ]; then
-            composer require "${{ inputs.require_extra }}" --no-update --prefer-dist
+            composer require "${{ inputs.require_extra }}" --no-update
           fi
-          composer update --prefer-dist --no-interaction --no-progress
+          # Need to use --prefer-source
+          composer update --prefer-source --no-interaction --no-progress
           # TODO: tmp until behat-extension PR merged
           # Was having issues with 'github authentication required when adding cc's repo even with the https url
           # so doing this wacky way instead which is much faster anyway
