@@ -1,6 +1,10 @@
 # Silverstripe GitHub Actions shared CI config
 
-By default will run Silverstripe Unit tests and PHPCS code linting
+By default will run Silverstripe Unit tests and PHPCS code linting.
+
+It's highly recommended that you use a tagged version (e.g. 0.1.2) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
+
+This repository is currently in development and code on the `main` branch could change at any time, including taking on a whole new direction. It's expected that new functionality will be added.
 
 ### Usage
 
