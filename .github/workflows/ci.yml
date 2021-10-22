@@ -202,7 +202,13 @@ jobs:
           if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
           echo "INSTALLER_VERSION is $INSTALLER_VERSION"
           composer require silverstripe/installer:$INSTALLER_VERSION --no-update
-          composer require silverstripe/recipe-testing:^1 --no-update
+          # TODO: recipe-testing is probably only required for behat
+          composer require "silverstripe/recipe-testing:^1||dev-two||^2" --no-update
+          PHPUNIT9=$(php -r '$rd=json_decode(file_get_contents("composer.json"))->{"require-dev"};$pu=$rd->{"phpunit/phpunit"}??"";$rt=$rd->{"silverstripe/recipe-testing"}??"";echo ($pu=="^9"||$rt=="dev-two"||$rt=="^2")?1:0;')
+          echo "PHPUNIT9 is $PHPUNIT9"
+          if [ $PHPUNIT9 == 1 ]; then
+            php -r "\$j=json_decode(file_get_contents('composer.json'));\$j->replace=json_decode('{\"sminnee/phpunit\":\"*\",\"sminnee/phpunit-mock-objects\":\"*\"}');file_put_contents('composer.json', json_encode(\$j, JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES));"
+          fi
           if [ ${{ matrix.phplinting }} ]; then
             composer require silverstripe/cow:dev-master --no-update
           fi
