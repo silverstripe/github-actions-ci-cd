@@ -41,7 +41,7 @@ $matrix = ['include' => []];
 //     }
 // }
 
-echo "matrix getcwd: " . getcwd() . "\n";
+echo "matrix ls: " . shell_exec('ls') . "\n";
 
 if (file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) {
     $matrix['include'][] = ['php' => '7.3', 'phpunit' => true, 'composer_arg' => '--prefer-lowest'];
