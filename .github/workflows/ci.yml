@@ -97,6 +97,7 @@ jobs:
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
           cat inputs.yml
           MATRIX_JSON=$(php matrix.php)
+          echo "MATRIX_JSON: $MATRIX_JSON"
           echo "::set-output name=matrix::${MATRIX_JSON}"
 
   tests:
