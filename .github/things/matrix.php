@@ -61,7 +61,7 @@ foreach ($extraJobs as $arr) {
 }
 
 foreach ($matrix['include'] as $arr) {
-    $arr['composer_arg] ??= ''; 
+    $arr['composer_arg'] ??= ''; 
 }
 
 $json = json_encode($matrix);
