@@ -95,6 +95,7 @@ jobs:
           echo "${{ inputs.default_jobs }}" >> inputs.yml
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
+          echo "cat inputs.yml"
           cat inputs.yml
           MATRIX_JSON=$(php matrix.php)
           echo "MATRIX_JSON: $MATRIX_JSON"
@@ -211,7 +212,7 @@ jobs:
             composer require "${{ inputs.require_extra }}" --no-update
           fi
           # Need to use --prefer-source
-          composer update --prefer-source --no-interaction --no-progress
+          composer update --prefer-source --no-interaction --no-progress "${{ matrix.composer_arg }}"
           # TODO: tmp until behat-extension PR merged
           # Was having issues with 'github authentication required when adding cc's repo even with the https url
           # so doing this wacky way instead which is much faster anyway
