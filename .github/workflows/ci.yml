@@ -18,48 +18,47 @@ on:
       version:
         type: string
         required: false
-        # TODO: need a way to get this to match the current tag of the shared config
-        # preferably won't be an input as that makes it modifiable in the module that calls this
+        # TODO: replace with inlining php includes with bash HEREDOC
         default: 'dynamic'
         # default: main
-      default_jobs:
-        type: string
-        required: false
-        default: |
-          - php: 7.3
-            endtoend: true
-          - php: 7.4
-            js: true
-          - php: 7.3
-            phpcoverage: true
-          - php: 7.4
-            phplinting: true
-          - php: 7.4
-            phpunit: true
+      # default_jobs:
+      #   type: string
+      #   required: false
+      #   default: |
+      #     - php: 7.3
+      #       endtoend: true
+      #     - php: 7.4
+      #       js: true
+      #     - php: 7.3
+      #       phpcoverage: true
+      #     - php: 7.4
+      #       phplinting: true
+      #     - php: 7.4
+      #       phpunit: true
       extra_jobs:
         type: string
         required: false
         default: ''
-      run_endtoend:
-        type: boolean
-        required: false
-        default: false
-      run_js:
-        type: boolean
-        required: false
-        default: false
-      run_phpcoverage:
-        type: boolean
-        required: false
-        default: false
-      run_phplinting:
-        type: boolean
-        required: false
-        default: true
-      run_phpunit:
-        type: boolean
-        required: false
-        default: true
+      # run_endtoend:
+      #   type: boolean
+      #   required: false
+      #   default: false
+      # run_js:
+      #   type: boolean
+      #   required: false
+      #   default: false
+      # run_phpcoverage:
+      #   type: boolean
+      #   required: false
+      #   default: false
+      # run_phplinting:
+      #   type: boolean
+      #   required: false
+      #   default: true
+      # run_phpunit:
+      #   type: boolean
+      #   required: false
+      #   default: true
       composer_require_extra:
         type: string
         required: false
@@ -217,6 +216,7 @@ jobs:
           fi
           # Need to use --prefer-source
           composer update --prefer-source --no-interaction --no-progress ${{ matrix.composer_arg }}
+
           # TODO: tmp until behat-extension PR merged
           # Was having issues with 'github authentication required when adding cc's repo even with the https url
           # so doing this wacky way instead which is much faster anyway
@@ -237,87 +237,83 @@ jobs:
           # Likely because the /tmp/silverstripe-cache-php7.4.xyz... dir being out of sync with TestOnly objects
           # If dev/build flush is needed here then delete the silverstripe-cache dir afterwards
 
-      - name: Tests - PHPUnit
-        if: ${{ matrix.phpunit }}
+      # All tests are contained in a single giant step, as opposed to many smaller steps with an 'if' yml condition,
+      # so that the there are a bunch of irrelevant skipped steps e.g. skipping "Test endtoend" on a phpunit run
+      - name: Run tests
         run: |
-          vendor/bin/phpunit --verbose
-          echo "Passed"
+          # Run the tests for the matrix entry
 
-      - name: Tests - End to end
-        if: ${{ matrix.endtoend == true }}
-        run: |
-          REF=$(php -r '$r="${{ github.ref }}";echo preg_replace("#^.+/.+/#","",$r);')
-          # Run behat tests
-          if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
-          # this script will update behat.yml to work with headless chrome
-          wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat-headless.yml"
-          wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat.php"
-          php behat.php
-          rm behat.php
-          rm behat-headless.yml
-          nohup sh -c "chromedriver" > /dev/null 2>&1 &
-          vendor/bin/behat
-          echo "Passed"
+          if [ ${{ matrix.phpunit }} ]; then
+            vendor/bin/phpunit --verbose
+            echo "Passed"
 
-      - name: Tests - JS
-        if: ${{ matrix.js }}
-        run: |
-          # Run yarn test etc
-          if [ ! -f package.json ]; then echo "package.json missing" && exit 1; fi
-          wget https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh
-          php -r "if (hash_file('sha384', 'install.sh') === 'dd4b116a7452fc3bb8c0e410ceac27e19b0ba0f900fe2f91818a95c12e92130fdfb8170fec170b9fb006d316f6386f2b') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('install.sh'); } echo PHP_EOL;"
-          if [ ! -f install.sh ]; then echo "Cannot install nvm" && exit 1; fi
-          . install.sh
-          rm install.sh
-          export NVM_DIR="$HOME/.nvm"
-          # this loads nvm into the current terminal
-          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          if [ ! -f .nvmrc ]; then echo "Missing .nvmrc" && exit 1; fi
-          nvm install
-          nvm use
-          rm -rf client/dist
-          npm install -g yarn
-          yarn install --network-concurrency 1
-          if [ -d vendor/silverstripe/admin ]; then
-            cd vendor/silverstripe/admin
+          elif [ ${{ matrix.endtoend }} ]; then
+            # Run behat tests
+            if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
+            # this script will update behat.yml to work with headless chrome
+            wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat-headless.yml"
+            wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat.php"
+            php behat.php
+            rm behat.php
+            rm behat-headless.yml
+            nohup sh -c "chromedriver" > /dev/null 2>&1 &
+            vendor/bin/behat
+            echo "Passed"
+
+          elif [ ${{ matrix.js }} ]; then
+            # Run yarn test etc
+            if [ ! -f package.json ]; then echo "package.json missing" && exit 1; fi
+            wget https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh
+            php -r "if (hash_file('sha384', 'install.sh') === 'dd4b116a7452fc3bb8c0e410ceac27e19b0ba0f900fe2f91818a95c12e92130fdfb8170fec170b9fb006d316f6386f2b') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('install.sh'); } echo PHP_EOL;"
+            if [ ! -f install.sh ]; then echo "Cannot install nvm" && exit 1; fi
+            . install.sh
+            rm install.sh
+            export NVM_DIR="$HOME/.nvm"
+            # this loads nvm into the current terminal
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            if [ ! -f .nvmrc ]; then echo "Missing .nvmrc" && exit 1; fi
+            nvm install
+            nvm use
+            rm -rf client/dist
+            npm install -g yarn
             yarn install --network-concurrency 1
-            cd ../../..
-          fi
-          yarn run build
-          git diff-files --quiet -w --relative=client
-          git diff --name-status --relative=client
-          yarn run test
-          yarn run lint
-          echo "Passed"
+            if [ -d vendor/silverstripe/admin ]; then
+              cd vendor/silverstripe/admin
+              yarn install --network-concurrency 1
+              cd ../../..
+            fi
+            yarn run build
+            git diff-files --quiet -w --relative=client
+            git diff --name-status --relative=client
+            yarn run test
+            yarn run lint
+            echo "Passed"
 
-      - name: Tests - PHP linting
-        if: ${{ matrix.phplinting }}
-        run: |
-          if [ ! -f phpcs.xml.dist ]; then echo "Missing phpcs.xml.dist" && exit 1; fi
-          vendor/bin/phpcs
-          # phpstan is optional
-          if [ -f phpstan.neon.dist ]; then
-            vendor/bin/phpstan analyse
-          fi
-          # cow validation is also done here due to it being a tiny piece of work not meriting its own step
-          if [ -f .cow.json ]; then
-            vendor/bin/cow schema:validate
-          fi
-          echo "Passed"
+          elif [ matrix.phplinting ]; then
+            if [ ! -f phpcs.xml.dist ]; then echo "Missing phpcs.xml.dist" && exit 1; fi
+            vendor/bin/phpcs
+            # phpstan is optional
+            if [ -f phpstan.neon.dist ]; then
+              vendor/bin/phpstan analyse
+            fi
+            # cow validation is also done here due to it being a tiny piece of work not meriting its own step
+            if [ -f .cow.json ]; then
+              vendor/bin/cow schema:validate
+            fi
+            echo "Passed"
 
-      - name: Tests - PHP Coverage
-        if: ${{ matrix.phpcoverage }}
-        run: |
-          curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --import
-          curl -Os https://uploader.codecov.io/latest/codecov-linux
-          curl -Os https://uploader.codecov.io/latest/codecov-linux.SHA256SUM
-          curl -Os https://uploader.codecov.io/latest/codecov-linux.SHA256SUM.sig
-          gpg --verify codecov-linux.SHA256SUM.sig codecov-linux.SHA256SUM
-          shasum -a 256 -c codecov-linux.SHA256SUM
-          chmod +x codecov-linux
-          phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml
-          ./codecov-linux -f coverage.xml;
-          echo "coverage.xml generated and uploaded to codecov"
+          elif [ matrix.phpcoverage ]; then
+            curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --import
+            curl -Os https://uploader.codecov.io/latest/codecov-linux
+            curl -Os https://uploader.codecov.io/latest/codecov-linux.SHA256SUM
+            curl -Os https://uploader.codecov.io/latest/codecov-linux.SHA256SUM.sig
+            gpg --verify codecov-linux.SHA256SUM.sig codecov-linux.SHA256SUM
+            shasum -a 256 -c codecov-linux.SHA256SUM
+            chmod +x codecov-linux
+            phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml
+            ./codecov-linux -f coverage.xml;
+            echo "coverage.xml generated and uploaded to codecov"
+          fi
 
       - name: Copy artifacts
         if: always()
