@@ -20,7 +20,7 @@ on:
         required: false
         # TODO: need a way to get this to match the current tag of the shared config
         # preferably won't be an input as that makes it modifiable in the module that calls this
-        default: '0.1.2'
+        default: 'dynamic'
         # default: main
       default_jobs:
         type: string
