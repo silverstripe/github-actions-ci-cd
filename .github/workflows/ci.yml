@@ -76,6 +76,8 @@ jobs:
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
