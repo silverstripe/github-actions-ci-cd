@@ -19,7 +19,7 @@ on:
         type: string
         required: false
         # TODO: replace with inlining php includes with bash HEREDOC
-        default: 'mysql8'
+        default: 'dynamic'
         # default: main
       # default_jobs:
       #   type: string
