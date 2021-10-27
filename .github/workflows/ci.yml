@@ -140,6 +140,9 @@ jobs:
         if: ${{ !matrix.phpcoverage }}
         with:
           php-version: ${{ matrix.php }}
+          # TODO - see if its possible to add xdebug with inline ${{ matrix.phpcoverage && ', xdebug' || '' }}
+          # this would allow removal of step below for phpcoverage
+          # would also need to remove 'coverage: xdebug', or change to none?
           extensions: curl, dom, gd, intl, json, ldap, mbstring, mysql, tidy, zip
           tools: composer:v2
 
@@ -161,14 +164,19 @@ jobs:
           fi
           echo "PHP has been configured"
 
-      - name: Install additional requirements - endtoend test
-        if: ${{ matrix.endtoend == true }}
+      - name: Apt install additional requirements 
         run: |
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository -y ppa:ondrej/php
-          sudo add-apt-repository -y ppa:ondrej/apache2
-          sudo apt update
-          sudo apt install libapache2-mod-php${{ matrix.php }}
+          # apt install extra requirements as required
+          if [ ${{ matrix.endtoend }} ]; then
+            sudo apt install -y software-properties-common
+            sudo add-apt-repository -y ppa:ondrej/php
+            sudo add-apt-repository -y ppa:ondrej/apache2
+            sudo apt update
+            sudo apt install libapache2-mod-php${{ matrix.php }}
+          fi
+          if [[ ${{ github.repository }} =~ /(spellcheck|recipe-authoring-tools)$ ]] || [ ${{ matris.phpunit_suite == recipe-authoring-tools }} ]; then
+            sudo apt install -y hunspell libhunspell-dev hunspell-en-us
+          fi
 
       - name: Configure apache - endtoend test
         if: ${{ matrix.endtoend }}
@@ -225,7 +233,7 @@ jobs:
             cp BasicContext.php vendor/silverstripe/behat-extension/src/Context/BasicContext.php
           fi
 
-      - name: Preparation
+      - name: Final preparation
         run: |
           # Add .env file and create artifacts directory
           wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/.env"
