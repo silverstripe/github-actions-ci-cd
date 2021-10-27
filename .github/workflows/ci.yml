@@ -19,7 +19,7 @@ on:
         type: string
         required: false
         # TODO: replace with inlining php includes with bash HEREDOC
-        default: 'dynamic'
+        default: 'mysql8'
         # default: main
       # default_jobs:
       #   type: string
@@ -129,7 +129,7 @@ jobs:
     env:
       artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit' || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
 
-    name: PHP ${{ matrix.php }}${{ matrix.phpunit && ' - phpunit' || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
+    name: PHP ${{ matrix.php }}${{ matrix.phpunit && ' - phpunit - '${{ matrix.phpunit_suite }} || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
 
     steps:
       - name: Checkout code
@@ -244,7 +244,11 @@ jobs:
           # Run the tests for the matrix entry
 
           if [ ${{ matrix.phpunit }} ]; then
-            vendor/bin/phpunit --verbose
+            if [ "${{ matrix.phpunit_suite }}" == "" ]; then
+              vendor/bin/phpunit --verbose
+            else
+              vendor/bin/phpunit --verbose --testsuite ${{ matrix.phpunit_suite }}
+            fi
             echo "Passed"
 
           elif [ ${{ matrix.endtoend }} ]; then
