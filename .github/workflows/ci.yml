@@ -110,7 +110,7 @@ jobs:
 
     services:
       mysql:
-        image: mysql:5.7
+        image: mysql:5.7q
         env:
           MYSQL_HOST: 127.0.0.1
           MYSQL_ROOT_PASSWORD: root
@@ -127,9 +127,9 @@ jobs:
       matrix: ${{fromJson(needs.genmatrix.outputs.matrix)}}
 
     env:
-      artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit' || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
+      artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
 
-    name: PHP ${{ matrix.php }}${{ matrix.phpunit && ' - phpunit - '${{ matrix.phpunit_suite }} || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
+    name: PHP ${{ matrix.php }}${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
 
     steps:
       - name: Checkout code
