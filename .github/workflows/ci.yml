@@ -293,7 +293,7 @@ jobs:
             yarn run lint
             echo "Passed"
 
-          elif [ matrix.phplinting ]; then
+          elif [ ${{ matrix.phplinting }} ]; then
             if [ ! -f phpcs.xml.dist ]; then echo "Missing phpcs.xml.dist" && exit 1; fi
             vendor/bin/phpcs
             # phpstan is optional
@@ -306,7 +306,7 @@ jobs:
             fi
             echo "Passed"
 
-          elif [ matrix.phpcoverage ]; then
+          elif [ ${{ matrix.phpcoverage }} ]; then
             curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --import
             curl -Os https://uploader.codecov.io/latest/codecov-linux
             curl -Os https://uploader.codecov.io/latest/codecov-linux.SHA256SUM
