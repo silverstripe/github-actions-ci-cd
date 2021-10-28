@@ -174,7 +174,7 @@ jobs:
             sudo apt update
             sudo apt install libapache2-mod-php${{ matrix.php }}
           fi
-          if [[ ${{ github.repository }} =~ /(spellcheck|recipe-authoring-tools)$ ]] || [ ${{ matris.phpunit_suite == recipe-authoring-tools }} ]; then
+          if [[ ${{ github.repository }} =~ /(spellcheck|recipe-authoring-tools)$ ]] || [ ${{ matrix.phpunit_suite }} == recipe-authoring-tools ]; then
             sudo apt install -y hunspell libhunspell-dev hunspell-en-us
           fi
 
