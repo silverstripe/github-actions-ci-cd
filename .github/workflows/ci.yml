@@ -195,6 +195,18 @@ jobs:
           sudo systemctl restart apache2
           echo "Apache has been configured"
 
+      - name: "Validate composer.json and composer.lock"
+        run: |
+          composer validate --strict
+
+      # This is shared between jobs
+      # https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows
+      - name: Enable shared composer cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/composer
+          key: shared-composer-cache
+
       - name: Composer
         run: |
           if [ ! $(which php) ]; then echo "PHP not installed, skipping" && exit 0; fi
