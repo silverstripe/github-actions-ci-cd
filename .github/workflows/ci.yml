@@ -192,7 +192,12 @@ jobs:
             composer require "${{ inputs.require_extra }}" --no-update
           fi
           # Need to use --prefer-source
-          composer update --prefer-source --no-interaction --no-progress ${{ matrix.composer_arg }}
+          # TODO: remove once php8 support is official
+          if [ "${{ matrix.php }}" == "8.0" ]; then
+            composer update --prefer-source --no-interaction --no-progress --ignore-platform-reqs ${{ matrix.composer_arg }}
+          else
+            composer update --prefer-source --no-interaction --no-progress ${{ matrix.composer_arg }}
+          fi
 
           # TODO: tmp until behat-extension PR merged
           # Was having issues with 'github authentication required when adding cc's repo even with the https url
