@@ -20,7 +20,7 @@ on:
         required: false
         # TODO: need a way to get this to match the current tag of the shared config
         # preferably won't be an input as that makes it modifiable in the module that calls this
-        default: '0.1.4'
+        default: '0.1.5'
         # default: main
       default_jobs:
         type: string
@@ -224,12 +224,15 @@ jobs:
           else
             composer update --prefer-source --no-interaction --no-progress
           fi
-          # TODO: tmp until behat-extension PR merged
+          # TODO: tmp until behat-extension PR merged. Remove after merged.
+          # https://github.com/silverstripe/silverstripe-behat-extension/pull/204
           # Was having issues with 'github authentication required when adding cc's repo even with the https url
           # so doing this wacky way instead which is much faster anyway
           if [ ${{ matrix.endtoend }} ]; then
-            wget https://raw.githubusercontent.com/creative-commoners/silverstripe-behat-extension/pulls/4/skip-mfa/src/Context/BasicContext.php
-            cp BasicContext.php vendor/silverstripe/behat-extension/src/Context/BasicContext.php
+            wget -q https://raw.githubusercontent.com/creative-commoners/silverstripe-behat-extension/pulls/4/skip-mfa/src/Context/BasicContext.php
+            if [ -f BasicContext.php ]; then mv BasicContext.php vendor/silverstripe/behat-extension/src/Context/BasicContext.php; fi
+            wget -q https://raw.githubusercontent.com/creative-commoners/silverstripe-behat-extension/pulls/4/skip-mfa/src/Utility/DebugTools.php
+            if [ -f DebugTools.php ]; then mv DebugTools.php vendor/silverstripe/behat-extension/src/Utility/DebugTools.php; fi
           fi
 
       - name: Preparation
