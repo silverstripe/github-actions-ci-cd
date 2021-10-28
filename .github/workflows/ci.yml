@@ -36,6 +36,8 @@ on:
             phplinting: true
           - php: 7.4
             phpunit: true
+          - php: 8.0
+            phpunit: true
       extra_jobs:
         type: string
         required: false
@@ -216,7 +218,12 @@ jobs:
             composer require "${{ inputs.require_extra }}" --no-update
           fi
           # Need to use --prefer-source
-          composer update --prefer-source --no-interaction --no-progress
+          if [ "${{ matrix.php }}" == "8.0" ]; then
+            # This is to support phpunit 5.7 which isn't compatible with php8
+            composer update --prefer-source --no-interaction --no-progress --ignore-platform-reqs
+          else
+            composer update --prefer-source --no-interaction --no-progress
+          fi
           # TODO: tmp until behat-extension PR merged
           # Was having issues with 'github authentication required when adding cc's repo even with the https url
           # so doing this wacky way instead which is much faster anyway
