@@ -195,10 +195,6 @@ jobs:
           sudo systemctl restart apache2
           echo "Apache has been configured"
 
-      - name: "Validate composer.json and composer.lock"
-        run: |
-          composer validate --strict
-
       # This is shared between jobs
       # https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows
       - name: Enable shared composer cache
