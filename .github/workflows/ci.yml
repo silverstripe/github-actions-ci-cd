@@ -167,7 +167,7 @@ jobs:
           # Disable xdebug which seems to always be installed
           # xdebug greatly slows down unit testing
           if ! [ ${{ matrix.phpcoverage }} ]; then
-            echo ";zend_extension=xdebug.so" > /etc/php/${{ matrix.php }}/mods-available/xdebug.ini
+            sudo echo ";zend_extension=xdebug.so" > /etc/php/${{ matrix.php }}/mods-available/xdebug.ini
           fi
           echo "PHP has been configured"
 
