@@ -3,9 +3,10 @@
 # https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 
 # TODO:
-# - [ ] composer REQUIRE_GRAPHQL, etc
+# - [ ] composer REQUIRE_GRAPHQL, etc (ideally would have zero config in modules)
 # - [ ] matrix entry for graphql3 vs 4 for behat
 # - [ ] PDO matrix entry
+# - [ ] npm cache (similar to composer cache)
 # - [ ] Consider getting rid of apache and use serve.php for behat since it'll run the job faster and it simplies this file (though behat will always be slow)
 
 name: ci
@@ -20,45 +21,10 @@ on:
         required: false
         # TODO: replace with inlining php includes with bash HEREDOC
         default: 'dynamic'
-        # default: main
-      # default_jobs:
-      #   type: string
-      #   required: false
-      #   default: |
-      #     - php: 7.3
-      #       endtoend: true
-      #     - php: 7.4
-      #       js: true
-      #     - php: 7.3
-      #       phpcoverage: true
-      #     - php: 7.4
-      #       phplinting: true
-      #     - php: 7.4
-      #       phpunit: true
       extra_jobs:
         type: string
         required: false
         default: ''
-      # run_endtoend:
-      #   type: boolean
-      #   required: false
-      #   default: false
-      # run_js:
-      #   type: boolean
-      #   required: false
-      #   default: false
-      # run_phpcoverage:
-      #   type: boolean
-      #   required: false
-      #   default: false
-      # run_phplinting:
-      #   type: boolean
-      #   required: false
-      #   default: true
-      # run_phpunit:
-      #   type: boolean
-      #   required: false
-      #   default: true
       composer_require_extra:
         type: string
         required: false
@@ -195,7 +161,8 @@ jobs:
           sudo systemctl restart apache2
           echo "Apache has been configured"
 
-      # This is shared between jobs
+      # This is shared between runs, not just jobs. It means the first time the repo runs the job it'll
+      # need to download requirements for the first time, after that it will be plenty quick
       # https://docs.github.com/en/actions/advanced-guides/caching-dependencies-to-speed-up-workflows
       - name: Enable shared composer cache
         uses: actions/cache@v2

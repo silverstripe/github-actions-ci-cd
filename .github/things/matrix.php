@@ -32,15 +32,6 @@ foreach ($inputs as $input => $value) {
 
 $matrix = ['include' => []];
 
-// foreach ($defaultJobs as $arr) {
-//     foreach (array_keys($arr) as $test) {
-//         if ($test === 'php' || !isset($runTests[$test]) || !$runTests[$test]) {
-//             continue;
-//         }
-//         $matrix['include'][] = $arr;
-//     }
-// }
-
 if (file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) {
     $fn = file_exists('phpunit.xml') ? 'phpunit.xml' : 'phpunit.xml.dist';
     $d = new DOMDocument();
@@ -52,10 +43,11 @@ if (file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) {
         if (!$ts->hasAttribute('name') || $ts->getAttribute('name') == 'Default') {
             continue;
         }
-        $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
+        $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
     }
     if (count($matrix) == 0) {
         $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
+        $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
     }
 }
 
