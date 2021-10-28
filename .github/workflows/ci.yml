@@ -137,19 +137,6 @@ jobs:
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
-        if: ${{ !matrix.phpcoverage }}
-        with:
-          php-version: ${{ matrix.php }}
-          # TODO - see if its possible to add xdebug with inline ${{ matrix.phpcoverage && ', xdebug' || '' }}
-          # this would allow removal of step below for phpcoverage
-          # would also need to remove 'coverage: xdebug', or change to none?
-          # Note: this seems to add xdebug regardless, as phpunit always reports that it's there
-          extensions: curl, dom, gd, intl, json, ldap, mbstring, mysql, tidy, zip
-          tools: composer:v2
-
-      - name: Install PHP - PHP coverage test
-        uses: shivammathur/setup-php@v2
-        if: ${{ matrix.phpcoverage }}
         with:
           php-version: ${{ matrix.php }}
           extensions: curl, dom, gd, intl, json, ldap, mbstring, mysql, tidy, xdebug, zip
@@ -164,8 +151,8 @@ jobs:
           if [ -f /etc/php/${{ matrix.php }}/apache2/php.ini ]; then
             sudo sh -c "echo 'memory_limit = 8196M' >> /etc/php/${{ matrix.php }}/apache2/php.ini"
           fi
-          # Disable xdebug which seems to always be installed
-          # xdebug greatly slows down unit testing
+          # Disable xdebug which greatly slow down unit testing
+          # Note: omitting xdebug from shivammathur/setup-php still results in xdebug being installed and enabled
           if ! [ ${{ matrix.phpcoverage }} ]; then
             sudo echo ";zend_extension=xdebug.so" > /etc/php/${{ matrix.php }}/mods-available/xdebug.ini
           fi
