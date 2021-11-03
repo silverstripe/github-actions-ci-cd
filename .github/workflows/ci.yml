@@ -15,12 +15,6 @@ on:
   workflow_call:
     inputs:
       # default/extra jobs must be multi-line string, as there's no support for type: array for inputs
-
-      version:
-        type: string
-        required: false
-        # TODO: replace with inlining php includes with bash HEREDOC
-        default: 'dynamic'
       extra_jobs:
         type: string
         required: false
@@ -69,7 +63,7 @@ jobs:
       - name: generate matrix
         id: generate-matrix
         run: |
-          wget https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/matrix.php
+          # todo: inputs can go straight into __matrix.php
           touch inputs.yml
           echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
           echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
@@ -83,10 +77,86 @@ jobs:
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
           echo "cat inputs.yml"
           cat inputs.yml
-          MATRIX_JSON=$(php matrix.php)
+
+          cat << EOF > __matrix.php
+          <?php
+          // Reads inputs.yml and creates a new json matrix
+          $inputs = yaml_parse(file_get_contents('inputs.yml'));
+          $run = [];
+          $defaultJobs = [];
+          $extraJobs = [];
+          foreach ($inputs as $input => $value) {
+            if (preg_match('#^run_#', $input)) {
+              if ($value === 'true') {
+                $value = true;
+              }
+              if ($value === 'false') {
+                $value = false;
+              }
+              // e.g. run_phplinting => phplinting
+              $type = str_replace('run_', '', $input);
+              $run[$type] = $value;
+            } else if ($input === 'default_jobs') {
+              if ($value === 'none') {
+                $value = [];
+              }
+              $defaultJobs = $value;
+            } else if ($input === 'extra_jobs') {
+              if ($value === 'none') {
+                $value = [];
+              }
+              $extraJobs = $value;
+            }
+          }
+          $matrix = ['include' => []];
+          if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['phpunit']) {
+            $fn = file_exists('phpunit.xml') ? 'phpunit.xml' : 'phpunit.xml.dist';
+            $d = new DOMDocument();
+            $d->preserveWhiteSpace = false;
+            $d->load($fn);
+            $x = new DOMXPath($d);
+            $tss = $x->query('//testsuite');
+            foreach ($tss as $ts) {
+              if (!$ts->hasAttribute('name') || $ts->getAttribute('name') == 'Default') {
+                continue;
+              }
+              $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
+              if (!$run['simple_matrix']) {
+                $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
+              }
+            }
+            if (count($matrix) == 0 && $run['phpunit']) {
+              $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
+              if (!$run['simple_matrix']) {
+                $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
+              }
+            }
+          }
+          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && $run['phpcoverage']) {
+            $matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
+          }
+          // TODO: no codecov file in silverstripe-admin, so cannot feature detect. should probably run by default and allow disabling with 'no_phpcoverage'?
+          if (file_exists('behat.yml') && $run['endtoend']) {
+            $matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
+          }
+          if (file_exists('package.json') && $run['js']) {
+            $matrix['include'][] = ['php' => '7.4', 'js' => true];
+          }
+          foreach ($extraJobs as $arr) {
+            $matrix['include'][] = $arr;
+          }
+          foreach ($matrix['include'] as $arr) {
+              $arr['composer_arg'] ??= ''; 
+          }
+          $json = json_encode($matrix);
+          $json = preg_replace("#\n +#", "\n", $json);
+          $json = str_replace("\n", '', $json);
+          echo trim($json);
+          EOF
+
+          MATRIX_JSON=$(php __matrix.php)
           echo "MATRIX_JSON: $MATRIX_JSON"
-          echo "pwd"
-          pwd
+          rm __matrix.php
           echo "::set-output name=matrix::${MATRIX_JSON}"
 
   tests:
@@ -162,17 +232,38 @@ jobs:
         run: |
           # apache2 is installed and running by default in ubuntu
           # update dir.conf to use index.php as the primary index doc
-          wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/dir.conf"
-          sudo cp dir.conf /etc/apache2/mods-enabled/dir.conf
-          rm dir.conf
+          cat << EOF > __dir.conf
+          <IfModule mod_dir.c>
+              DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm
+          </IfModule>
+          EOF
+          # TODO: sudo cat and get rid of cp?
+          sudo cp __dir.conf /etc/apache2/mods-enabled/dir.conf
+          rm __dir.conf
           # this script will create a 000-default.conf file with the pwd as the DocumentRoot
-          wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/000-default.conf"
-          wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/apache2.php"
-          # TODO: this script pretty basic and could probably be replaced with cat 000-default.conf | tr oldtxt newtext
-          php apache2.php
-          sudo cp 000-default.conf /etc/apache2/sites-enabled/000-default.conf
-          rm 000-default.conf
-          rm apache2.php
+          cat << EOF > __000-default
+          <VirtualHost *:80>
+            ServerAdmin webmaster@localhost
+            DocumentRoot $pwd
+            <Directory $pwd>
+              AllowOverride All
+              Require all granted
+            </Directory>
+            ErrorLog ${APACHE_LOG_DIR}/error.log
+            CustomLog ${APACHE_LOG_DIR}/access.log combined
+          </VirtualHost>
+          EOF
+          # TODO: this could be replace with using bash a variable pwd/cwd straight into the inline php
+          cat << EOF > __apache2.php
+          <?php
+          $pwd = rtrim(trim(shell_exec('pwd')), '/');
+          $s = file_get_contents('__000-default.conf');
+          $s = str_replace('$pwd', $pwd, $s);
+          file_put_contents('__000-default.conf', $s);
+          EOF
+          php __apache2.php
+          sudo cp __000-default.conf /etc/apache2/sites-enabled/000-default.conf
+          rm __000-default.conf
           sudo a2enmod rewrite
           # run apache as 'runner:docker' instead of 'www-data:www-data'
           sudo sh -c "echo 'export APACHE_RUN_USER=runner' >> /etc/apache2/envvars"
@@ -231,7 +322,20 @@ jobs:
       - name: Final preparation
         run: |
           # Add .env file and create artifacts directory
-          wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/.env"
+          cat << EOF > .env
+          SS_ENVIRONMENT_TYPE="dev"
+          SS_DATABASE_CLASS="MySQLDatabase"
+          SS_DATABASE_SERVER="127.0.0.1"
+          SS_DATABASE_USERNAME="root"
+          SS_DATABASE_PASSWORD="root"
+          SS_DATABASE_NAME="SS_mysite"
+          SS_DEFAULT_ADMIN_USERNAME="admin"
+          SS_DEFAULT_ADMIN_PASSWORD="password"
+          SS_TRUSTED_PROXY_IPS="*"
+          SS_MFA_SECRET_KEY="1234567894175b99966561e1efe237e4"
+          SS_BASE_URL="http://localhost"
+          EOF
+
           # Artifacts directory must be created after composer install as it would remove the artifacts directory
           mkdir artifacts
           # Shouldn't dev/build flush here
@@ -259,10 +363,51 @@ jobs:
             if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
             # this script will update behat.yml to work with headless chrome
             wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat-headless.yml"
-            wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat.php"
-            php behat.php
-            rm behat.php
-            rm behat-headless.yml
+            cat << EOF > __behat_headless.yml
+            default:
+              suites: []
+              extensions:
+                SilverStripe\BehatExtension\MinkExtension:
+                  default_session: facebook_web_driver
+                  javascript_session: facebook_web_driver
+                  facebook_web_driver:
+                    browser: chrome
+                    wd_host: "http://127.0.0.1:9515"
+                    capabilities:
+                      extra_capabilities:
+                        chromeOptions:
+                          args:
+                            # no sandbox is required to run chromium inside a container https://stackoverflow.com/a/59154049
+                            - "--no-sandbox"
+                            # run headless within container - removes the need for xvfb
+                            - "--headless"
+                            # disable gpu is often mentioned as fix after headless chrome suddenly breaks after an update
+                            # leaving it in just in case to prevent hard to diagnose errors later
+                            - "--disable-gpu"
+                  browser_name: chrome
+                SilverStripe\BehatExtension\Extension:
+                  screenshot_path: '%paths.base%/artifacts/screenshots'
+            EOF
+            cat << EOF > __behat.php
+            <?php
+            // use __behat-headless.yml as the main behat.yml file,
+            // though use 'suites' from the module behat.yml
+            $a = file_get_contents('__behat-headless.yml');
+            $b = file_get_contents('behat.yml');
+            preg_match("#(?s)  suites:(.+?)\n  [a-z]#", $b, $m);
+            if (!$m) {
+                preg_match("#(?s)  suites: (.+?)$#", $b, $m);
+            }
+            if (!$m) {
+                echo "Could not match suites in behat.yml, cannot run behat\n\n";
+                die;
+            }
+            $c = str_replace('suites: []', 'suites: ' . $m[1], $a);
+            file_put_contents('behat.yml', $c);
+            EOF
+            php __behat.php
+            rm __behat.php
+            rm __behat-headless.yml
             nohup sh -c "chromedriver" > /dev/null 2>&1 &
             vendor/bin/behat
             echo "Passed"
