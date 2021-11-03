@@ -44,13 +44,13 @@ if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['php
             continue;
         }
         $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
-        if ($run['phpunit_php8']) {
+        if (!$run['simple_matrix']) {
             $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
         }
     }
     if (count($matrix) == 0 && $run['phpunit']) {
         $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
-        if ($run['phpunit_php8']) {
+        if (!$run['simple_matrix']) {
             $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
         }
     }

@@ -29,6 +29,9 @@ on:
         type: string
         required: false
         default: ''
+      simple_matrix:
+        type: boolean
+        default: false
       run_endtoend:
         type: boolean
         default: true
@@ -39,9 +42,6 @@ on:
         type: boolean
         default: true
       run_phpunit:
-        type: boolean
-        default: true
-      run_phpunit_php8:
         type: boolean
         default: true
       run_js:
@@ -76,7 +76,7 @@ jobs:
           echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> inputs.yml
           echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
           echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
-          echo "run_phpunit_php8: ${{ inputs.run_php8 }}" >> inputs.yml
+          echo "simple_matrix: ${{ inputs.simple_matrix }}" >> inputs.yml
           echo "default_jobs:" >> inputs.yml
           echo "${{ inputs.default_jobs }}" >> inputs.yml
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
