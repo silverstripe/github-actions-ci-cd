@@ -81,79 +81,78 @@ jobs:
           cat << EOF > __matrix.php
           <?php
           // Reads inputs.yml and creates a new json matrix
-          $inputs = yaml_parse(file_get_contents('inputs.yml'));
-          $run = [];
-          $defaultJobs = [];
-          $extraJobs = [];
-          foreach ($inputs as $input => $value) {
-            if (preg_match('#^run_#', $input)) {
-              if ($value === 'true') {
-                $value = true;
+          \$inputs = yaml_parse(file_get_contents('inputs.yml'));
+          \$run = [];
+          \$defaultJobs = [];
+          \$extraJobs = [];
+          foreach (\$inputs as \$input => \$value) {
+            if (preg_match('#^run_#', \$input)) {
+              if (\$value === 'true') {
+                \$value = true;
               }
-              if ($value === 'false') {
-                $value = false;
+              if (\$value === 'false') {
+                \$value = false;
               }
               // e.g. run_phplinting => phplinting
-              $type = str_replace('run_', '', $input);
-              $run[$type] = $value;
-            } else if ($input === 'default_jobs') {
-              if ($value === 'none') {
-                $value = [];
+              \$type = str_replace('run_', '', \$input);
+              \$run[\$type] = \$value;
+            } else if (\$input === 'default_jobs') {
+              if (\$value === 'none') {
+                \$value = [];
               }
-              $defaultJobs = $value;
-            } else if ($input === 'extra_jobs') {
-              if ($value === 'none') {
-                $value = [];
+              \$defaultJobs = \$value;
+            } else if (\$input === 'extra_jobs') {
+              if (\$value === 'none') {
+                \$value = [];
               }
-              $extraJobs = $value;
+              \$extraJobs = \$value;
             }
           }
-          $matrix = ['include' => []];
-          if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && $run['phpunit']) {
-            $fn = file_exists('phpunit.xml') ? 'phpunit.xml' : 'phpunit.xml.dist';
-            $d = new DOMDocument();
-            $d->preserveWhiteSpace = false;
-            $d->load($fn);
-            $x = new DOMXPath($d);
-            $tss = $x->query('//testsuite');
-            foreach ($tss as $ts) {
-              if (!$ts->hasAttribute('name') || $ts->getAttribute('name') == 'Default') {
+          \$matrix = ['include' => []];
+          if ((file_exists('phpunit.xml') || file_exists('phpunit.xml.dist')) && \$run['phpunit']) {
+            \$fn = file_exists('phpunit.xml') ? 'phpunit.xml' : 'phpunit.xml.dist';
+            \$d = new DOMDocument();
+            \$d->preserveWhiteSpace = false;
+            \$d->load(\$fn);
+            \$x = new DOMXPath(\$d);
+            \$tss = \$x->query('//testsuite');
+            foreach (\$tss as \$ts) {
+              if (!\$ts->hasAttribute('name') || \$ts->getAttribute('name') == 'Default') {
                 continue;
               }
-              $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
-              if (!$run['simple_matrix']) {
-                $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => $ts->getAttribute('name')];
+              \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => \$ts->getAttribute('name')];
+              if (!\$run['simple_matrix']) {
+                \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => \$ts->getAttribute('name')];
               }
             }
-            if (count($matrix) == 0 && $run['phpunit']) {
-              $matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
-              if (!$run['simple_matrix']) {
-                $matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
+            if (count(\$matrix) == 0 && \$run['phpunit']) {
+              \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
+              if (!\$run['simple_matrix']) {
+                \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
               }
             }
           }
-          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && $run['phpcoverage']) {
-            $matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
+          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && \$run['phpcoverage']) {
+            \$matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
           }
           // TODO: no codecov file in silverstripe-admin, so cannot feature detect. should probably run by default and allow disabling with 'no_phpcoverage'?
-          if (file_exists('behat.yml') && $run['endtoend']) {
-            $matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
+          if (file_exists('behat.yml') && \$run['endtoend']) {
+            \$matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
           }
-          if (file_exists('package.json') && $run['js']) {
-            $matrix['include'][] = ['php' => '7.4', 'js' => true];
+          if (file_exists('package.json') && \$run['js']) {
+            \$matrix['include'][] = ['php' => '7.4', 'js' => true];
           }
-          foreach ($extraJobs as $arr) {
-            $matrix['include'][] = $arr;
+          foreach (\$extraJobs as \$arr) {
+            \$matrix['include'][] = \$arr;
           }
-          foreach ($matrix['include'] as $arr) {
-              $arr['composer_arg'] ??= ''; 
+          foreach (\$matrix['include'] as \$arr) {
+              \$arr['composer_arg'] ??= ''; 
           }
-          $json = json_encode($matrix);
-          $json = preg_replace("#\n +#", "\n", $json);
-          $json = str_replace("\n", '', $json);
-          echo trim($json);
+          \$json = json_encode(\$matrix);
+          \$json = preg_replace("#\n +#", "\n", \$json);
+          \$json = str_replace("\n", '', \$json);
+          echo trim(\$json);
           EOF
-
           MATRIX_JSON=$(php __matrix.php)
           echo "MATRIX_JSON: $MATRIX_JSON"
           rm __matrix.php
@@ -256,10 +255,10 @@ jobs:
           # TODO: this could be replace with using bash a variable pwd/cwd straight into the inline php
           cat << EOF > __apache2.php
           <?php
-          $pwd = rtrim(trim(shell_exec('pwd')), '/');
-          $s = file_get_contents('__000-default.conf');
-          $s = str_replace('$pwd', $pwd, $s);
-          file_put_contents('__000-default.conf', $s);
+          \$pwd = rtrim(trim(shell_exec('pwd')), '/');
+          \$s = file_get_contents('__000-default.conf');
+          \$s = str_replace('\$pwd', \$pwd, \$s);
+          file_put_contents('__000-default.conf', \$s);
           EOF
           php __apache2.php
           sudo cp __000-default.conf /etc/apache2/sites-enabled/000-default.conf
@@ -392,18 +391,18 @@ jobs:
             <?php
             // use __behat-headless.yml as the main behat.yml file,
             // though use 'suites' from the module behat.yml
-            $a = file_get_contents('__behat-headless.yml');
-            $b = file_get_contents('behat.yml');
-            preg_match("#(?s)  suites:(.+?)\n  [a-z]#", $b, $m);
-            if (!$m) {
-                preg_match("#(?s)  suites: (.+?)$#", $b, $m);
+            \$a = file_get_contents('__behat-headless.yml');
+            \$b = file_get_contents('behat.yml');
+            preg_match("#(?s)  suites:(.+?)\n  [a-z]#", \$b, \$m);
+            if (!\$m) {
+                preg_match("#(?s)  suites: (.+?)\$#", \$b, \$m);
             }
-            if (!$m) {
+            if (!\$m) {
                 echo "Could not match suites in behat.yml, cannot run behat\n\n";
                 die;
             }
-            $c = str_replace('suites: []', 'suites: ' . $m[1], $a);
-            file_put_contents('behat.yml', $c);
+            \$c = str_replace('suites: []', 'suites: ' . \$m[1], \$a);
+            file_put_contents('behat.yml', \$c);
             EOF
             php __behat.php
             rm __behat.php
