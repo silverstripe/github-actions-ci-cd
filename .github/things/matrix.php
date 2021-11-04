@@ -43,6 +43,12 @@ foreach ($extraJobs as $arr) {
     $matrix['include'][] = $arr;
 }
 
+foreach ($matrix['include'] as $i => $arr) {
+    if (isset($arr['php']) && $arr['php'] == 8) {
+        $matrix['include'][$i]['php'] = '8.0';
+    }
+}
+
 $json = json_encode($matrix);
 $json = preg_replace("#\n +#", "\n", $json);
 $json = str_replace("\n", '', $json);
