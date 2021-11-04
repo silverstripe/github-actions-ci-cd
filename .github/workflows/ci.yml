@@ -20,7 +20,7 @@ on:
         required: false
         # TODO: need a way to get this to match the current tag of the shared config
         # preferably won't be an input as that makes it modifiable in the module that calls this
-        default: '0.1.6'
+        default: '0.1.9'
         # default: main
       default_jobs:
         type: string
@@ -152,20 +152,24 @@ jobs:
       - name: Configure PHP
         run: |
           if [ ! $(which php) ]; then echo "PHP not installed, skipping" && exit 0; fi
-          sudo sh -c "echo 'memory_limit = 8196M' >> /etc/php/${{ matrix.php }}/cli/php.ini"
-          if [ -f /etc/php/${{ matrix.php }}/apache2/php.ini ]; then
-            sudo sh -c "echo 'memory_limit = 8196M' >> /etc/php/${{ matrix.php }}/apache2/php.ini"
+          PHPV=${{ matrix.php }}
+          if [ $PHPV == 8 ]; then PHPV=8.0; fi
+          sudo sh -c "echo 'memory_limit = 8196M' >> /etc/php/$PHPV/cli/php.ini"
+          if [ -f /etc/php/$PHPV/apache2/php.ini ]; then
+            sudo sh -c "echo 'memory_limit = 8196M' >> /etc/php/$PHPV/apache2/php.ini"
           fi
           echo "PHP has been configured"
 
       - name: Install additional requirements - endtoend test
         if: ${{ matrix.endtoend == true }}
         run: |
+          PHPV=${{ matrix.php }}
+          if [ $PHPV == 8 ]; then PHPV=8.0; fi
           sudo apt install -y software-properties-common
           sudo add-apt-repository -y ppa:ondrej/php
           sudo add-apt-repository -y ppa:ondrej/apache2
           sudo apt update
-          sudo apt install libapache2-mod-php${{ matrix.php }}
+          sudo apt install libapache2-mod-php$PHPV
 
       - name: Configure apache - endtoend test
         if: ${{ matrix.endtoend }}
@@ -218,7 +222,9 @@ jobs:
             composer require ${{ inputs.composer_require_extra }} --no-update
           fi
           # Need to use --prefer-source
-          if [ "${{ matrix.php }}" == "8.0" ]; then
+          PHPV=${{ matrix.php }}
+          if [ $PHPV == 8 ]; then PHPV=8.0; fi
+          if [ $PHPV == "8.0" ]; then
             # This is to support phpunit 5.7 which isn't compatible with php8
             composer update --prefer-source --no-interaction --no-progress --ignore-platform-reqs
           else
