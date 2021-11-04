@@ -22,7 +22,7 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.5
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.8
 ```
 
 Use the following if your module does not have a `phpcs.xml.dist` file
@@ -33,7 +33,7 @@ Use the following if your module does not have a `phpcs.xml.dist` file
 ```
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.5
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.8
     with:
       run_phplinting: false
 ```
