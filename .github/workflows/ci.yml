@@ -20,7 +20,7 @@ on:
         required: false
         # TODO: need a way to get this to match the current tag of the shared config
         # preferably won't be an input as that makes it modifiable in the module that calls this
-        default: '0.1.5'
+        default: '0.1.6'
         # default: main
       default_jobs:
         type: string
@@ -214,8 +214,8 @@ jobs:
           if [ ${{ matrix.phplinting }} ]; then
             composer require silverstripe/cow:dev-master --no-update
           fi
-          if [ "${{ inputs.require_extra }}" != "" ]; then
-            composer require "${{ inputs.require_extra }}" --no-update
+          if [ "${{ inputs.composer_require_extra }}" != "" ]; then
+            composer require "${{ inputs.composer_require_extra }}" --no-update
           fi
           # Need to use --prefer-source
           if [ "${{ matrix.php }}" == "8.0" ]; then
