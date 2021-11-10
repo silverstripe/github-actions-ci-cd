@@ -20,7 +20,7 @@ on:
         required: false
         # TODO: need a way to get this to match the current tag of the shared config
         # preferably won't be an input as that makes it modifiable in the module that calls this
-        default: '0.1.10'
+        default: '0.1.11'
         # default: main
       default_jobs:
         type: string
@@ -205,7 +205,9 @@ jobs:
           echo "COMPOSER_ROOT_VERSION is $COMPOSER_ROOT_VERSION"
           # TODO: hardcoded to installer, need to allow "self" for recipes/installer runs
           INSTALLER_VERSION=4.x-dev
-          if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
+          if [[ "${{ github.repository }}" =~ ^silverstripe/(admin|assets|asset\-admin|campaign\-admin|cms|errorpage|framework|reports|siteconfig|versioned|versioned\-admin)$ ]]; then
+            if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
+          fi
           echo "INSTALLER_VERSION is $INSTALLER_VERSION"
           composer require silverstripe/installer:$INSTALLER_VERSION --no-update
           # TODO: recipe-testing is probably only required for behat
