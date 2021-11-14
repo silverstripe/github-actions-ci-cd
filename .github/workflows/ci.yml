@@ -27,7 +27,7 @@ on:
         type: boolean
         default: false
       run_endtoend:
-       eEtype: boolean
+        type: boolean
         default: true
       run_phpcoverage:
         type: boolean
