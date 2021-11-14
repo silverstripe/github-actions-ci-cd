@@ -310,14 +310,6 @@ jobs:
             composer update --prefer-source --no-interaction --no-progress ${{ matrix.composer_arg }}
           fi
 
-          # TODO: tmp until behat-extension PR merged
-          # Was having issues with 'github authentication required when adding cc's repo even with the https url
-          # so doing this wacky way instead which is much faster anyway
-          if [ ${{ matrix.endtoend }} ]; then
-            wget https://raw.githubusercontent.com/creative-commoners/silverstripe-behat-extension/pulls/4/skip-mfa/src/Context/BasicContext.php
-            cp BasicContext.php vendor/silverstripe/behat-extension/src/Context/BasicContext.php
-          fi
-
       - name: Final preparation
         run: |
           # Add .env file and create artifacts directory
