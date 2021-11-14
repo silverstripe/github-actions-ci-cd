@@ -386,7 +386,7 @@ jobs:
                   browser_name: chrome
                 SilverStripe\BehatExtension\Extension:
                   screenshot_path: '%paths.base%/artifacts/screenshots'
-            EOF
+          EOF
             cat << EOF > __behat.php
             <?php
             // use __behat-headless.yml as the main behat.yml file,
@@ -403,7 +403,7 @@ jobs:
             }
             \$c = str_replace('suites: []', 'suites: ' . \$m[1], \$a);
             file_put_contents('behat.yml', \$c);
-            EOF
+          EOF
             php __behat.php
             rm __behat.php
             rm __behat-headless.yml
