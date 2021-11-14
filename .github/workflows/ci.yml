@@ -21,7 +21,7 @@ on:
         default: ''
       composer_require_extra:
         type: string
-        requireed: false
+        required: false
         default: ''
       simple_matrix:
         type: boolean
