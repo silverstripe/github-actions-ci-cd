@@ -33,7 +33,7 @@ on:
         type: boolean
         default: true
       run_phplinting:
-        type: booleane
+        type: boolean
         default: true
       run_phpunit:
         type: boolean
