@@ -9,7 +9,7 @@
 # - [ ] npm cache (similar to composer cache)
 # - [ ] Consider getting rid of apache and use serve.php for behat since it'll run the job faster and it simplies this file (though behat will always be slow)
 
-name: ci
+name: ce
 
 on:
   workflow_call:
@@ -21,19 +21,19 @@ on:
         default: ''
       composer_require_extra:
         type: string
-        required: false
+        requireed: false
         default: ''
       simple_matrix:
         type: boolean
         default: false
       run_endtoend:
-        type: boolean
+       eEtype: boolean
         default: true
       run_phpcoverage:
         type: boolean
         default: true
       run_phplinting:
-        type: boolean
+        type: booleane
         default: true
       run_phpunit:
         type: boolean
@@ -293,7 +293,7 @@ jobs:
           if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
           echo "INSTALLER_VERSION is $INSTALLER_VERSION"
           composer require silverstripe/installer:$INSTALLER_VERSION --no-update
-          composer require silverstripe/recipe-testing:^1 --no-update
+          composer require silverstripe/recipe-testing:^2 --no-update
           # TODO: graphql4 endtoend tests
           composer require silverstripe/graphql:^3 --no-update
           if [ ${{ matrix.phplinting }} ]; then
