@@ -400,7 +400,7 @@ jobs:
             rm __behat.php
             rm __behat-headless.yml
             nohup sh -c "chromedriver" > /dev/null 2>&1 &
-            vendor/bin/behat
+            vendor/bin/behat --strict
             echo "Passed"
 
           elif [ ${{ matrix.js }} ]; then
