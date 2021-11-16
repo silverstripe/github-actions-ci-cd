@@ -335,7 +335,7 @@ jobs:
           
           # Required for assets unit tests as well as recipes that run assets unit tests
           # Should technically be defined as composer_require_extra on individual modules, though easier just doing here
-          composer require mikey179/vfsstream:^1 --no-update
+          composer require mikey179/vfsstream:^1 --dev --no-update
 
           # Temporarily only using graphql3 since master branch of graphql4 may break at any point
           if ! [[ ${{ github.repository }} =~ /graphql$ ]]; then
@@ -343,13 +343,13 @@ jobs:
             composer require silverstripe/graphql:^3 --no-update
           fi
           if [ ${{ matrix.endtoend }} ]; then
-            composer require silverstripe/recipe-testing:^2 --no-update
+            composer require silverstripe/recipe-testing:^2 --dev --no-update
           fi
           if [ ${{ matrix.phplinting }} ]; then
-            composer require silverstripe/cow:dev-master --no-update
+            composer require silverstripe/cow:dev-master --dev --no-update
           fi
-          if [ "${{ inputs.require_extra }}" != "" ]; then
-            composer require "${{ inputs.require_extra }}" --no-update
+          if [ "${{ inputs.composer_require_extra }}" != "" ]; then
+            composer require "${{ inputs.composer_require_extra }}" --no-update
           fi
           cat composer.json
 
