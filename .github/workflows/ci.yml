@@ -374,35 +374,35 @@ jobs:
             if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
             # this script will update behat.yml to work with headless chrome
             cat << EOF > __behat_headless.yml
-            default:
-              suites: []
-              extensions:
-                SilverStripe\BehatExtension\MinkExtension:
-                  default_session: facebook_web_driver
-                  javascript_session: facebook_web_driver
-                  facebook_web_driver:
-                    browser: chrome
-                    wd_host: "http://127.0.0.1:9515"
-                    capabilities:
-                      extra_capabilities:
-                        chromeOptions:
-                          args:
-                            # no sandbox is required to run chromium inside a container https://stackoverflow.com/a/59154049
-                            - "--no-sandbox"
-                            # run headless within container - removes the need for xvfb
-                            - "--headless"
-                            # disable gpu is often mentioned as fix after headless chrome suddenly breaks after an update
-                            # leaving it in just in case to prevent hard to diagnose errors later
-                            - "--disable-gpu"
-                  browser_name: chrome
-                SilverStripe\BehatExtension\Extension:
-                  screenshot_path: '%paths.base%/artifacts/screenshots'
+          default:
+            suites: []
+            extensions:
+              SilverStripe\BehatExtension\MinkExtension:
+                default_session: facebook_web_driver
+                javascript_session: facebook_web_driver
+                facebook_web_driver:
+                  browser: chrome
+                  wd_host: "http://127.0.0.1:9515"
+                  capabilities:
+                    extra_capabilities:
+                      chromeOptions:
+                        args:
+                          # no sandbox is required to run chromium inside a container https://stackoverflow.com/a/59154049
+                          - "--no-sandbox"
+                          # run headless within container - removes the need for xvfb
+                          - "--headless"
+                          # disable gpu is often mentioned as fix after headless chrome suddenly breaks after an update
+                          # leaving it in just in case to prevent hard to diagnose errors later
+                          - "--disable-gpu"
+              browser_name: chrome
+              SilverStripe\BehatExtension\Extension:
+                screenshot_path: '%paths.base%/artifacts/screenshots'
           EOF
             cat << EOF > __behat.php
             <?php
             // use __behat_headless.yml as the main behat.yml file,
             // though use 'suites' from the module behat.yml
-            \$a = file_get_contents('__behat_headless.yml');
+            \$a = trim(file_get_contents('__behat_headless.yml'));
             \$b = file_get_contents('behat.yml');
             preg_match("#(?s)  suites:(.+?)\n  [a-z]#", \$b, \$m);
             if (!\$m) {
@@ -484,7 +484,7 @@ jobs:
           # Copy selected files to the artifacts dir
           if [ -f composer.json ]; then cp composer.json artifacts; fi
           if [ -f composer.lock ]; then cp composer.lock artifacts; fi
-          if [ "${{ matrix.endtoend }}" == "true" && -f behat.yml ]; then cp behat.yml artifacts; fi
+          if [ ${{ matrix.endtoend }} ] && [ -f behat.yml ]; then cp behat.yml artifacts; fi
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
