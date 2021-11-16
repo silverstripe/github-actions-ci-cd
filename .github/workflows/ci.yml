@@ -134,7 +134,7 @@ jobs:
                 \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => \$ts->getAttribute('name')];
               }
             }
-            if (count(\$matrix) == 0 && \$run['phpunit']) {
+            if (count(\$matrix['include']) == 0) {
               \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
               if (!\$simpleMatrix) {
                 \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
@@ -155,9 +155,6 @@ jobs:
           }
           foreach (\$extraJobs as \$arr) {
             \$matrix['include'][] = \$arr;
-          }
-          foreach (\$matrix['include'] as \$arr) {
-              \$arr['composer_arg'] ??= ''; 
           }
           \$json = json_encode(\$matrix);
           \$json = preg_replace("#\n +#", "\n", \$json);
