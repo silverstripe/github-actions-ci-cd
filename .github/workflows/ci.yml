@@ -190,7 +190,7 @@ jobs:
     env:
       artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
 
-    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
+    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || 'all' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
 
     steps:
       - name: Checkout code
@@ -394,7 +394,7 @@ jobs:
                           # disable gpu is often mentioned as fix after headless chrome suddenly breaks after an update
                           # leaving it in just in case to prevent hard to diagnose errors later
                           - "--disable-gpu"
-              browser_name: chrome
+                browser_name: chrome
               SilverStripe\BehatExtension\Extension:
                 screenshot_path: '%paths.base%/artifacts/screenshots'
           EOF
