@@ -58,11 +58,11 @@ on:
         default: true
 
 jobs:
-  debug:
-    name: Debug
+  context:
+    name: Context
     runs-on: ubuntu-latest
     steps:
-      - name: Debug
+      - name: Context
         run: |
           # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
           echo "github.base_ref: ${{ github.base_ref }}"
@@ -413,7 +413,7 @@ jobs:
                     extra_capabilities:
                       chromeOptions:
                         args:
-                          # no sandbox is required to run chromium inside a container https://stackoverflow.com/a/59154049
+                          # no esandbox is required to run chromium inside a container https://stackoverflow.com/a/59154049
                           - "--no-sandbox"
                           # run headless within container - removes the need for xvfb
                           - "--headless"
