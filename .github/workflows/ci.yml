@@ -7,7 +7,6 @@
 
 # TODO - readme
 # - [ ] how to do cron on modules
-# - [ ] module config options
 
 # TODO - dynmaic matrix
 # - [ ] matrix entry for graphql3 vs 4 for behat
@@ -349,7 +348,7 @@ jobs:
             composer require silverstripe/cow:dev-master --dev --no-update
           fi
           if [ "${{ inputs.composer_require_extra }}" != "" ]; then
-            composer require "${{ inputs.composer_require_extra }}" --no-update
+            composer require ${{ inputs.composer_require_extra }} --no-update
           fi
           cat composer.json
 

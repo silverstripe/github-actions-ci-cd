@@ -1,8 +1,8 @@
 # Silverstripe GitHub Actions shared CI config
 
-By default will run Silverstripe Unit tests and PHPCS code linting.
+Will use feature detection based on files in the root folder such as phpunit.xml.dist to build dynmaic matrix of tests to run
 
-It's highly recommended that you use a tagged version (e.g. 0.1.2) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
+It's highly recommended that you use a tagged version (e.g. 0.2.0) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
 
 This repository is currently in development and code on the `main` branch could change at any time, including taking on a whole new direction. It's expected that new functionality will be added.
 
@@ -22,35 +22,43 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.2
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.2.0
 ```
 
 Use the following if your module does not have a `phpcs.xml.dist` file
 
 (or better still, copy paste this [sample phpcs.xml.dist](https://raw.githubusercontent.com/silverstripe/silverstripe-elemental/4/phpcs.xml.dist) file in to your module)
 
-
 ```
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.2
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.2.0
     with:
       run_phplinting: false
 ```
 
 #### Some other "with" options
 
-Run php coverage
+Extra composer requirements
+Do NOT quote the string for multiple requirements
+`composer_require_extra: silverstripe/widgets:^2 silverstripe/comments:^3`
+
+Simple matrix - php 7.4 with mysql 5.7 only
+`simple_matrix: true`
+
+Enable php coverage (codecov - no feature detection)
+Modules on the silverstripe account will automaticaly have this enabled
 `run_phpcoverage: true`
 
-Run behat tests:
-`run_endtoend: true`
+Disable end-to-end tests (behat.yml):
+`run_endtoend: false`
 
-Run js tests, linting and build diff:
-`run_js: true`
+Disable JS tests (package.json - yarn lint, test and build diff):
+`run_js: false`
 
-Don't run phpunit tests
+Disable phpunit tests (phpunit.xml.dist / phpunit.xml)
 `run_phpunit: false`
 
-Don't run php linting (phpcs, phpstan)
+Disable php linting (phpcs.xml.dist, phpstan.neon.dist)
 `run_phplinting: false`
+
