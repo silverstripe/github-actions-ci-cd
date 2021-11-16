@@ -226,8 +226,11 @@ jobs:
             sudo apt install -y software-properties-common
             sudo add-apt-repository -y ppa:ondrej/php
             sudo add-apt-repository -y ppa:ondrej/apache2
+            # uncomment to get chromium beta which can be helpful to resolve specific bugs
+            # sudo add-apt-repository -y ppa:chromium-team/beta; fi
             sudo apt update
-            sudo apt install libapache2-mod-php${{ matrix.php }}
+            sudo apt-get remove -y --purge google-chrome-stable || true
+            sudo apt install -y libapache2-mod-php${{ matrix.php }} chromium-browser chromium-chromedriver
           fi
           if [[ ${{ github.repository }} =~ /(spellcheck|recipe-authoring-tools)$ ]] || [ ${{ matrix.phpunit_suite }} == recipe-authoring-tools ]; then
             sudo apt install -y hunspell libhunspell-dev hunspell-en-us
@@ -269,9 +272,6 @@ jobs:
           EOF
           php __apache2.php
           sudo cp __000-default.conf /etc/apache2/sites-enabled/000-default.conf
-          # tmp
-          cat __000-default.conf
-          #
           rm __000-default.conf
           sudo a2enmod rewrite
           # run apache as 'runner:docker' instead of 'www-data:www-data'
