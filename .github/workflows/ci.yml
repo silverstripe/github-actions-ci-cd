@@ -190,7 +190,7 @@ jobs:
     env:
       artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
 
-    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ''}}${{ matrix.phpunit && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
+    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ' || '' }}${{ matrix.phpunit && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
 
     steps:
       - name: Checkout code
