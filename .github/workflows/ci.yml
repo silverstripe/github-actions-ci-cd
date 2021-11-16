@@ -269,6 +269,9 @@ jobs:
           EOF
           php __apache2.php
           sudo cp __000-default.conf /etc/apache2/sites-enabled/000-default.conf
+          # tmp
+          cat __000-default.conf
+          #
           rm __000-default.conf
           sudo a2enmod rewrite
           # run apache as 'runner:docker' instead of 'www-data:www-data'
