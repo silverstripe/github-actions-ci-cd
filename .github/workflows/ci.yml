@@ -27,7 +27,7 @@ name: ci
 on:
   workflow_call:
     inputs:
-      # default/extra jobs must be multi-line string, as there's no support for type: array for inputs
+      # extra jobs must be multi-line string, as there's no support for type: array for inputs
       extra_jobs:
         type: string
         required: false
@@ -36,6 +36,7 @@ on:
         type: string
         required: false
         default: ''
+      # simple matrix will only run a single php 7.4 mysql 5.7 job instead of a full matrix
       simple_matrix:
         type: boolean
         default: false
@@ -85,20 +86,17 @@ jobs:
           echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
           echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
           echo "simple_matrix: ${{ inputs.simple_matrix }}" >> inputs.yml
-          echo "default_jobs:" >> inputs.yml
-          echo "${{ inputs.default_jobs }}" >> inputs.yml
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
           echo "cat inputs.yml"
           cat inputs.yml
-
           cat << EOF > __matrix.php
           <?php
           // Reads inputs.yml and creates a new json matrix
           \$inputs = yaml_parse(file_get_contents('inputs.yml'));
           \$run = [];
-          \$defaultJobs = [];
           \$extraJobs = [];
+          \$simpleMatrix = false;
           foreach (\$inputs as \$input => \$value) {
             if (preg_match('#^run_#', \$input)) {
               if (\$value === 'true') {
@@ -110,16 +108,13 @@ jobs:
               // e.g. run_phplinting => phplinting
               \$type = str_replace('run_', '', \$input);
               \$run[\$type] = \$value;
-            } else if (\$input === 'default_jobs') {
-              if (\$value === 'none') {
-                \$value = [];
-              }
-              \$defaultJobs = \$value;
             } else if (\$input === 'extra_jobs') {
               if (\$value === 'none') {
                 \$value = [];
               }
               \$extraJobs = \$value;
+            } else if (\$input === 'simple_matrix') {
+              \$simpleMatrix = \$value === 'true';
             }
           }
           \$matrix = ['include' => []];
@@ -135,13 +130,13 @@ jobs:
                 continue;
               }
               \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => \$ts->getAttribute('name')];
-              if (!\$run['simple_matrix']) {
+              if (!\$simpleMatrix) {
                 \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => \$ts->getAttribute('name')];
               }
             }
             if (count(\$matrix) == 0 && \$run['phpunit']) {
               \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
-              if (!\$run['simple_matrix']) {
+              if (!\$simpleMatrix) {
                 \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
               }
             }
@@ -381,7 +376,6 @@ jobs:
             # Run behat tests
             if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
             # this script will update behat.yml to work with headless chrome
-            wget "https://raw.githubusercontent.com/emteknetnz/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat-headless.yml"
             cat << EOF > __behat_headless.yml
             default:
               suites: []
