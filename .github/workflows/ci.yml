@@ -3,9 +3,11 @@
 # https://docs.github.com/en/actions/learn-github-actions/reusing-workflows
 
 # TODO - functionality
-# - [ ] composer is hardcoded to installer, need to allow "self" for recipes/installer runs
 # - [ ] job to validate/sanitize inputs
-# - [ ] cron
+
+# TODO - readme
+# - [ ] how to do cron on modules
+# - [ ] module config options
 
 # TODO - dynmaic matrix
 # - [ ] matrix entry for graphql3 vs 4 for behat
@@ -19,7 +21,6 @@
 # - [ ] behat green/red colours in output, also phpunit?
 # - [ ] consider getting rid of apache and use serve.php for behat since it'll run the job faster and it simplies this file (though behat will always be slow)
 # - [ ] consider splitting code into multiple yml files / repos
-
 
 name: ci
 
