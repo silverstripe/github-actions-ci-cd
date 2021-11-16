@@ -250,8 +250,8 @@ jobs:
           cat << EOF > __000-default.conf
           <VirtualHost *:80>
             ServerAdmin webmaster@localhost
-            DocumentRoot $pwd
-            <Directory $pwd>
+            DocumentRoot PWD
+            <Directory PWD>
               AllowOverride All
               Require all granted
             </Directory>
@@ -264,7 +264,7 @@ jobs:
           <?php
           \$pwd = rtrim(trim(shell_exec('pwd')), '/');
           \$s = file_get_contents('__000-default.conf');
-          \$s = str_replace('\$pwd', \$pwd, \$s);
+          \$s = str_replace('PWD', \$pwd, \$s);
           file_put_contents('__000-default.conf', \$s);
           EOF
           php __apache2.php
