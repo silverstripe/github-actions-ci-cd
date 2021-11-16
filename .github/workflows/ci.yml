@@ -72,11 +72,11 @@ jobs:
         with:
           php-version: '7.4'
           extensions: yaml
-      - name: generate matrix
+      - name: Generate matrix
         id: generate-matrix
         run: |
           COVERAGE=false
-          if [ ${{ inputs.run_phpcoverage }} ] || [ ${{ github.repository_owner }} == 'silverstripe' ]; then COVERAGE=true; fi
+          if [ "${{ inputs.run_phpcoverage }}" == "false" ] || [ ${{ github.repository_owner }} == 'silverstripe' ]; then COVERAGE=true; fi
           echo "COVERAGE is $COVERAGE"
           # TODO: inputs can go straight into __matrix.php
           touch inputs.yml
