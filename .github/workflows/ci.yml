@@ -135,9 +135,9 @@ jobs:
               }
             }
             if (count(\$matrix['include']) == 0) {
-              \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => ''];
+              \$matrix['include'][] = ['php' => '7.4', 'phpunit' => true, 'phpunit_suite' => 'all'];
               if (!\$simpleMatrix) {
-                \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => ''];
+                \$matrix['include'][] = ['php' => '8.0', 'phpunit' => true, 'phpunit_suite' => 'all'];
               }
             }
           }
@@ -190,7 +190,7 @@ jobs:
     env:
       artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
 
-    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || 'all' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
+    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
 
     steps:
       - name: Checkout code
@@ -247,7 +247,7 @@ jobs:
           sudo cp __dir.conf /etc/apache2/mods-enabled/dir.conf
           rm __dir.conf
           # this script will create a 000-default.conf file with the pwd as the DocumentRoot
-          cat << EOF > __000-default
+          cat << EOF > __000-default.conf
           <VirtualHost *:80>
             ServerAdmin webmaster@localhost
             DocumentRoot $pwd
@@ -362,7 +362,7 @@ jobs:
           # Run the tests for the matrix entry
 
           if [ ${{ matrix.phpunit }} ]; then
-            if [ "${{ matrix.phpunit_suite }}" == "" ]; then
+            if [ "${{ matrix.phpunit_suite }}" == "all" ]; then
               vendor/bin/phpunit --verbose
             else
               vendor/bin/phpunit --verbose --testsuite ${{ matrix.phpunit_suite }}
