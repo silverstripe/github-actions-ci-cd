@@ -403,9 +403,9 @@ jobs:
           EOF
             cat << EOF > __behat.php
             <?php
-            // use __behat-headless.yml as the main behat.yml file,
+            // use __behat_headless.yml as the main behat.yml file,
             // though use 'suites' from the module behat.yml
-            \$a = file_get_contents('__behat-headless.yml');
+            \$a = file_get_contents('__behat_headless.yml');
             \$b = file_get_contents('behat.yml');
             preg_match("#(?s)  suites:(.+?)\n  [a-z]#", \$b, \$m);
             if (!\$m) {
@@ -420,7 +420,7 @@ jobs:
           EOF
             php __behat.php
             rm __behat.php
-            rm __behat-headless.yml
+            rm __behat_headless.yml
             nohup sh -c "chromedriver" > /dev/null 2>&1 &
             vendor/bin/behat --strict
             echo "Passed"
