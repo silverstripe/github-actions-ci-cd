@@ -226,27 +226,10 @@ jobs:
             sudo apt install -y software-properties-common
             sudo add-apt-repository -y ppa:ondrej/php
             sudo add-apt-repository -y ppa:ondrej/apache2
-            # uncomment to get chromium beta which can be helpful to resolve specific bugs
-            # sudo add-apt-repository -y ppa:chromium-team/beta; fi
             sudo apt update
-            # TODO tmp
-            which chromedriver
-            chromedriver -v
-            #
-            sudo apt-get remove -y --purge google-chrome-stable || true
-            sudo apt install -y libapache2-mod-php${{ matrix.php }} chromium-browser chromium-chromedriver
-            touch google-chrome
-            echo '#!/bin/sh' >> google-chrome
-            echo '/usr/bin/chromium-browser "\$@"' >> google-chrome
-            # TODO tmp
-            cat google-chrome
-            #
-            sudo cp google-chrome /usr/bin/google-chrome
-            rm google-chrome
-            # TODO tmp
-            which chromedriver
-            chromedriver -v
-            #
+            sudo apt install -y libapache2-mod-php${{ matrix.php }}
+            # ubuntu-latest will install a current version of google-chrome-stable (currently 95)
+            # so there's no need to install chromium like we used to on travis-shared
           fi
           if [[ ${{ github.repository }} =~ /(spellcheck|recipe-authoring-tools)$ ]] || [ ${{ matrix.phpunit_suite }} == recipe-authoring-tools ]; then
             sudo apt install -y hunspell libhunspell-dev hunspell-en-us
