@@ -7,11 +7,6 @@
 # - [ ] job to validate/sanitize inputs
 # - [ ] cron
 
-# TODO - quality of life
-# - [ ] show composer.json (though not .lock) in output so don't need to view artifacts
-# - [ ] `composer show` in output
-# - [ ] tidy up job name string
-
 # TODO - dynmaic matrix
 # - [ ] matrix entry for graphql3 vs 4 for behat
 # - [ ] PDO matrix entry
@@ -48,7 +43,7 @@ on:
         default: true
       run_phpcoverage:
         type: boolean
-        # modules on silverstripe account will ingore this and automatically run codecov
+        # modules on silverstripe account will ignore this and always run codecov
         default: false
       run_phplinting:
         type: boolean
@@ -202,7 +197,7 @@ jobs:
     env:
       artifacts_name: php${{ matrix.php }}_${{ matrix.phpunit && 'phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && 'endtoend' || '' }}${{ matrix.js && 'js' || '' }}${{ matrix.phpcoverage && 'phpcoverage' || '' }}${{ matrix.phplinting && 'phplinting' || '' }}
 
-    name: PHP ${{ matrix.php }}${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
+    name: PHP ${{ matrix.php }} ${{ matrix.phpunit && ' - phpunit - ' && matrix.phpunit_suite || '' }}${{ matrix.endtoend && ' - endtoend' || '' }}${{ matrix.js && ' - js' || '' }}${{ matrix.phpcoverage && ' - phpcoverage' || '' }}${{ matrix.phplinting && ' - phplinting' || '' }}
 
     steps:
       - name: Checkout code
@@ -300,7 +295,6 @@ jobs:
 
       - name: Composer
         run: |
-          if [ ! $(which php) ]; then echo "PHP not installed, skipping" && exit 0; fi
           # Update composer.json and install dependencies
           # github.base_ref is only available on pull-requests and is the target branch
           # github.ref is used for regular branch builds such as crons
@@ -338,6 +332,7 @@ jobs:
           if [ "${{ inputs.require_extra }}" != "" ]; then
             composer require "${{ inputs.require_extra }}" --no-update
           fi
+          cat composer.json
 
           # Installing using --prefer-source for recipes + some modules that run other unit-tests in other modules
           composer update --prefer-source --no-interaction --no-progress ${{ matrix.composer_arg }}
@@ -465,6 +460,7 @@ jobs:
             echo "Passed"
 
           elif [ ${{ matrix.phplinting }} ]; then
+            # Run phpcs
             if [ ! -f phpcs.xml.dist ]; then echo "Missing phpcs.xml.dist" && exit 1; fi
             vendor/bin/phpcs
             # phpstan is optional
