@@ -58,6 +58,26 @@ on:
         default: true
 
 jobs:
+  debug:
+    name: Debug
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug
+        run: |
+          # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+          echo "github.base_ref: ${{ github.base_ref }}"
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.ref_name: ${{ github.ref_name }}"
+          echo "github.ref_type: ${{ github.ref_type }}"
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.sha: ${{ github.sha }}"
+          echo "job.status: ${{ job.status }}"
+          # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
+          echo "github.event.issue.pull_request: ${{ github.event.issue.pull_request }}"
+          echo "github.event.issue.number: ${{ github.event.issue.number }}"
+
   # used to generate a dynamic jobs matrix
   genmatrix:
     name: Generate matrix
@@ -305,13 +325,17 @@ jobs:
             php -r "\$j=json_decode(file_get_contents('composer.json'));\$j->replace=json_decode('{\"sminnee/phpunit\":\"*\",\"sminnee/phpunit-mock-objects\":\"*\"}');file_put_contents('composer.json', json_encode(\$j, JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES));"
           fi
 
-          # Require silverstripe/installer for non-recipe and select modules
+          # Require silverstripe/installer for non-recipe and all but a few modules
           if ! [[ ${{ github.repository }} =~ /(recipe-|silverstripe-config|silverstripe-installer|vendor-plugin) ]]; then
             INSTALLER_VERSION=4.x-dev
             if [[ "$COMPOSER_ROOT_VERSION" =~ "x-dev" ]]; then INSTALLER_VERSION=$(php -r "echo preg_replace('/^[0-9]+/', '4', '$COMPOSER_ROOT_VERSION');"); fi
             echo "INSTALLER_VERSION is $INSTALLER_VERSION"
             composer require silverstripe/installer:$INSTALLER_VERSION --no-update
           fi
+          
+          # Required for assets unit tests as well as recipes that run assets unit tests
+          # Should technically be defined as composer_require_extra on individual modules, though easier just doing here
+          composer require mikey179/vfsstream:^1 --no-update
 
           # Temporarily only using graphql3 since master branch of graphql4 may break at any point
           if ! [[ ${{ github.repository }} =~ /graphql$ ]]; then
