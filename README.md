@@ -40,7 +40,7 @@ jobs:
 #### Some other "with" options
 
 Extra composer requirements
-Do NOT quote the string for multiple requirements
+You do not need to quote the string for multiple requirements
 `composer_require_extra: silverstripe/widgets:^2 silverstripe/comments:^3`
 
 Simple matrix - php 7.4 with mysql 5.7 only
