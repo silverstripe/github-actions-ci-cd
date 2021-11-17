@@ -94,17 +94,15 @@ jobs:
       - name: Generate matrix
         id: generate-matrix
         run: |
-          COVERAGE=false
-          if [ "${{ inputs.run_phpcoverage }}" == "false" ] || [ ${{ github.repository_owner }} == 'silverstripe' ]; then COVERAGE=true; fi
-          echo "COVERAGE is $COVERAGE"
           # TODO: inputs can go straight into __matrix.php
           touch inputs.yml
           echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
           echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
-          echo "run_phpcoverage: $COVERAGE" >> inputs.yml
+          echo "run_phpcoverage: ${{ inputs.run_phpcoverage }}" >> inputs.yml
           echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
           echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
           echo "simple_matrix: ${{ inputs.simple_matrix }}" >> inputs.yml
+          echo "github_repository: ${{ github.repository }}" >> inputs.yml
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
           if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
           echo "cat inputs.yml"
@@ -116,6 +114,7 @@ jobs:
           \$run = [];
           \$extraJobs = [];
           \$simpleMatrix = false;
+          \$githubRepository = '';
           foreach (\$inputs as \$input => \$value) {
             if (preg_match('#^run_#', \$input)) {
               if (\$value === 'true') {
@@ -134,6 +133,8 @@ jobs:
               \$extraJobs = \$value;
             } else if (\$input === 'simple_matrix') {
               \$simpleMatrix = \$value === 'true';
+            } else if (\$input === 'github_repository') {
+              \$githubRepository = $value;
             }
           }
           \$matrix = ['include' => []];
@@ -160,13 +161,14 @@ jobs:
               }
             }
           }
-          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist'))) {
+          // skip phpcs and behat on silverstripe-installer which include sample files for use in projects
+          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
             \$matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
           }
-          if (\$run['phpcoverage']) {
+          if (\$run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
             \$matrix['include'][] = ['php' => '7.3', 'phpcoverage' => true];
           }
-          if (file_exists('behat.yml') && \$run['endtoend']) {
+          if (file_exists('behat.yml') && \$run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
             \$matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
           }
           if (file_exists('package.json') && \$run['js']) {
