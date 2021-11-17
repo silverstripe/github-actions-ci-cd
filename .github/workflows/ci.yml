@@ -134,7 +134,7 @@ jobs:
             } else if (\$input === 'simple_matrix') {
               \$simpleMatrix = \$value === 'true';
             } else if (\$input === 'github_repository') {
-              \$githubRepository = $value;
+              \$githubRepository = \$value;
             }
           }
           \$matrix = ['include' => []];
