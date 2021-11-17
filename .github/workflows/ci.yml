@@ -162,13 +162,13 @@ jobs:
             }
           }
           // skip phpcs and behat on silverstripe-installer which include sample files for use in projects
-          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', $githubRepository)) {
+          if ((file_exists('phpcs.xml') || file_exists('phpcs.xml.dist')) && !preg_match('#/silverstripe-installer$#', \$githubRepository)) {
             \$matrix['include'][] = ['php' => '7.4', 'phplinting' => true];
           }
           if (\$run['phpcoverage'] || preg_match('#^silverstripe/#', $githubRepository)) {
             \$matrix['include'][] = ['php' => '7.3', 'phpcoverage' => true];
           }
-          if (file_exists('behat.yml') && \$run['endtoend'] && !preg_match('#/silverstripe-installer#', $githubRepository)) {
+          if (file_exists('behat.yml') && \$run['endtoend'] && !preg_match('#/silverstripe-installer#', \$githubRepository)) {
             \$matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
           }
           if (file_exists('package.json') && \$run['js']) {
