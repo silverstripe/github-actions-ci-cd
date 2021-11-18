@@ -1,7 +1,7 @@
 name: js-upgrade
 
 # TODO:
-# - [ ] check for existing 'Upgrade JS' PRs by github actions - if they exist, close old ones
+# - [ ] check for existing 'Update JS dependencies' PRs by github actions - if they exist, close old ones
 
 on:
   workflow_call:
@@ -101,7 +101,7 @@ jobs:
           git checkout -b $NEW_BRANCH
           git add .
           git status
-          git commit -m 'DEP Update JS'
+          git commit -m 'DEP Update JS dependencies'
           git push --set-upstream origin $NEW_BRANCH
 
           # Create pull request via GitHub API
@@ -112,7 +112,7 @@ jobs:
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d @- << EOF
           {
-            "title": "DEP Update JS",
+            "title": "DEP Update JS dependencies",
             "body": "Automated yarn upgrade and yarn build",
             "head": "$NEW_BRANCH",
             "base": "$BRANCH"
