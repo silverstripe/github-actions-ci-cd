@@ -1,5 +1,8 @@
 name: js-upgrade
 
+# TODO:
+# - [ ] check for existing 'Upgrade JS' PRs by github actions - if they exist, close old ones
+
 on:
   workflow_call:
 
