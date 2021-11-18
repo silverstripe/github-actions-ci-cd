@@ -76,6 +76,7 @@ jobs:
           # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
           echo "github.event.issue.pull_request: ${{ github.event.issue.pull_request }}"
           echo "github.event.issue.number: ${{ github.event.issue.number }}"
+          echo "github.event.repository.name: ${{ github.event.repository.name }}"
 
   # used to generate a dynamic jobs matrix
   genmatrix:
