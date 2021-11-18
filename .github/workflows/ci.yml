@@ -170,7 +170,12 @@ jobs:
             \$matrix['include'][] = ['php' => '7.3', 'phpcoverage' => true];
           }
           if (file_exists('behat.yml') && \$run['endtoend'] && !preg_match('#/silverstripe-installer#', \$githubRepository)) {
+            // graphql 3
             \$matrix['include'][] = ['php' => '7.3', 'endtoend' => true];
+            if (!\$simpleMatrix) {
+              // graphql 4
+              \$matrix['include'][] = ['php' => '7.4', 'endtoend' => true];
+            }
           }
           if (file_exists('package.json') && \$run['js']) {
             \$matrix['include'][] = ['php' => '7.4', 'js' => true];
@@ -339,11 +344,16 @@ jobs:
           # Should technically be defined as composer_require_extra on individual modules, though easier just doing here
           composer require mikey179/vfsstream:^1 --dev --no-update
 
-          # Temporarily only using graphql3 since master branch of graphql4 may break at any point
+          # require graphql 3 most of the time
+          # require graphql 4 for endtoend tests on php 7.4
           if ! [[ ${{ github.repository }} =~ /graphql$ ]]; then
-            # TODO: graphql4 endtoend tests
-            composer require silverstripe/graphql:^3 --no-update
+            if [ ${{ matrix.endtoend }} ] && [ "${{ matrix.php }}" == "7.4" ]; then
+              composer require silverstripe/graphql:^4 --no-update
+            else
+              composer require silverstripe/graphql:^3 --no-update
+            fi
           fi
+
           if [ ${{ matrix.endtoend }} ]; then
             composer require silverstripe/recipe-testing:^2 --dev --no-update
           fi

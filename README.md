@@ -62,3 +62,11 @@ Disable phpunit tests (phpunit.xml.dist / phpunit.xml)
 Disable php linting (phpcs.xml.dist, phpstan.neon.dist)
 `run_phplinting: false`
 
+Extra jobs
+Define php version and/or db
+Omit the 'run_' prefix
+```
+extra_jobs: |
+  - php: '8.0'
+    endtoend: true
+```
