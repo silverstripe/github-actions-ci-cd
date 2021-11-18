@@ -2,6 +2,7 @@ name: js-upgrade
 
 # TODO:
 # - [ ] check for existing 'Update JS dependencies' PRs by github actions - if they exist, close old ones
+# - [ ] rename from 'js-upgrade' to 'update-js-dep' (upgrade to update) - will need to update module yml
 
 on:
   workflow_call:
