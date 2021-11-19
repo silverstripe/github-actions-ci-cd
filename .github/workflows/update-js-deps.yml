@@ -94,7 +94,7 @@ jobs:
         run: |
           # Run git commit, push and create pull-request as 'github-actions' user
 
-          # heads/refs/mybranch => mybranch
+          # refs/heads/mybranch => mybranch
           BRANCH=$(echo ${{ github.ref }} | cut -c 12-)
           NEW_BRANCH=pulls/$BRANCH/update-js-$(date +%s)
           git config --local user.name "github-actions"
