@@ -2,7 +2,7 @@
 
 Will use feature detection based on files in the root folder such as phpunit.xml.dist to build dynmaic matrix of tests to run
 
-It's highly recommended that you use a tagged version (e.g. 0.2.0) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
+It's highly recommended that you use a tagged version (e.g. v0.2) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
 
 This repository is currently in development and code on the `main` branch could change at any time, including taking on a whole new direction. It's expected that new functionality will be added.
 
@@ -23,7 +23,7 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.2.0
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@v0.2
 ```
 
 Use the following if your module does not have a `phpcs.xml.dist` file
@@ -33,7 +33,7 @@ Use the following if your module does not have a `phpcs.xml.dist` file
 ```
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.2.0
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@v0.2
     with:
       run_phplinting: false
 ```
@@ -88,5 +88,5 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@0.2.0
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@v0.2
 ```
