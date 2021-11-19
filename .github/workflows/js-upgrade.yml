@@ -11,6 +11,7 @@ jobs:
   context:
     name: Context
     runs-on: ubuntu-latest
+
     steps:
       - name: Context
         run: |
@@ -32,6 +33,9 @@ jobs:
   js-upgrade:
     name: 'JS upgrade'
     runs-on: ubuntu-latest
+    env:
+      pr_title: DEP Update JS dependencies
+      pr_desc: Automated yarn upgrade and yarn build
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -102,10 +106,25 @@ jobs:
           git checkout -b $NEW_BRANCH
           git add .
           git status
-          git commit -m 'DEP Update JS dependencies'
+          git commit -m ${{ env.pr_title }}
           git push --set-upstream origin $NEW_BRANCH
 
-          # Create pull request via GitHub API
+          # Remove any existing pull-requests
+          JSON=$(curl https://api.github.com/repos/${{ github.repository }}/pulls)
+          NUMBERS=$(echo $JSON | jq '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]") | .number')
+          for NUMBER in $NUMBERS; do
+            curl -s \
+            -X PATCH https://api.github.com/repos/${{ github.repository }}/pulls/$NUMBER \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d @- << EOF
+            {
+              "state": "closed"
+            }
+          EOF
+          done
+
+          # Create new pull-request via GitHub API
           # https://docs.github.com/en/rest/reference/pulls#create-a-pull-request
           curl -s \
           -X POST https://api.github.com/repos/${{ github.repository }}/pulls \
@@ -113,8 +132,8 @@ jobs:
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d @- << EOF
           {
-            "title": "DEP Update JS dependencies",
-            "body": "Automated yarn upgrade and yarn build",
+            "title": ${{ env.pr_title }},
+            "body": "${{ env.pr_desc }}",
             "head": "$NEW_BRANCH",
             "base": "$BRANCH"
           }
