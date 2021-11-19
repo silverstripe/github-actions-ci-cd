@@ -47,13 +47,14 @@ jobs:
             echo "NEW_TAGS is ${NEW_TAGS[@]}"
             for NEW_TAG in $NEW_TAGS; do
               # Delete any old tags via GitHub API
+              echo "Attempting to delete old $NEW_TAG tag (it may not exist yet)"
               curl -s \
               -X DELETE https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$NEW_TAG \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
-              echo "Deleted old $NEW_TAG tag"
 
               # Create new tag
+              echo "Create new tag $NEW_TAG"
               curl -s \
               -X POST https://api.github.com/repos/${{ github.repository }}/git/refs \
               -H "Accept: application/vnd.github.v3+json" \
