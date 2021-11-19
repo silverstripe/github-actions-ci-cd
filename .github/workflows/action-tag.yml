@@ -1,5 +1,7 @@
 # Runs on the github-actions-ci-cd module to automatically delete and re-release tags
-# Such as 2, 2.5 when 2.5.0 is released as ^ requirements are not supposed e.g. # @^2 won't work
+# as ^ requirements are not supposed e.g. # @^2 won't work unfortunately
+# Will release v2 when 2.5.0 is released and v0.3 when 0.3.5 is released
+# Using the 'v' prefix to avoid confusion with the '2' branch naming convention that Silverstripe uses
 
 on:
   push:
@@ -40,30 +42,27 @@ jobs:
             MAJOR="${BASH_REMATCH[1]}"
             MINOR="${BASH_REMATCH[2]}"
             PATCH="${BASH_REMATCH[3]}"
-            NEW_TAGS=("${MAJOR}" "${MAJOR}.${MINOR}")
+            NEW_TAG="v${MAJOR}"
             if [ "$MAJOR" == "0" ]; then
-              NEW_TAGS=("${MAJOR}.${MINOR}")
+              NEW_TAGS=("v${MAJOR}.${MINOR}")
             fi
-            echo "NEW_TAGS is ${NEW_TAGS[@]}"
-            for NEW_TAG in $NEW_TAGS; do
-              # Delete any old tags via GitHub API
-              echo "Attempting to delete old $NEW_TAG tag (it may not exist yet)"
-              curl -s \
-              -X DELETE https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$NEW_TAG \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
+            # Delete old tag via GitHub API
+            echo "Attempting to delete old $NEW_TAG tag (it may not exist yet)"
+            curl -s \
+            -X DELETE https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$NEW_TAG \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}"
 
-              # Create new tag
-              echo "Create new tag $NEW_TAG"
-              curl -s \
-              -X POST https://api.github.com/repos/${{ github.repository }}/git/refs \
-              -H "Accept: application/vnd.github.v3+json" \
-              -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -d @- << EOF
-              {
-                "ref": "refs/tags/$NEW_TAG",
-                "sha": "${{ github.sha }}"
-              }
+            # Create new tag via GitHub API
+            echo "Create new tag $NEW_TAG"
+            curl -s \
+            -X POST https://api.github.com/repos/${{ github.repository }}/git/refs \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d @- << EOF
+            {
+              "ref": "refs/tags/$NEW_TAG",
+              "sha": "${{ github.sha }}"
+            }
           EOF
-            done
           fi
