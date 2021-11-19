@@ -74,7 +74,7 @@ extra_jobs: |
 
 ### Update JS dependencies
 
-This workflow will automatically run `yarn upgrade` to update js dependencies and create a pull-request authored by a github-actions user. Non-admin modules will have the admin module installed in a sibling directory
+This workflow will automatically run `yarn upgrade` to update js dependencies and create a pull-request authored by a github-actions user. Non-admin modules will have the admin module using the `1` branch installed in a sibling directory so that shared components are accessible.
 
 The cron will automatically run using the modules default branch on the first day of every 3rd month - Jan, Apr, Jul, Oct. The action can also be triggered manually.
 
