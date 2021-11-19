@@ -106,7 +106,7 @@ jobs:
           git checkout -b $NEW_BRANCH
           git add .
           git status
-          git commit -m ${{ env.pr_title }}
+          git commit -m "${{ env.pr_title }}"
           git push --set-upstream origin $NEW_BRANCH
 
           # Remove any existing pull-requests
@@ -132,7 +132,7 @@ jobs:
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d @- << EOF
           {
-            "title": ${{ env.pr_title }},
+            "title": "${{ env.pr_title }}",
             "body": "${{ env.pr_desc }}",
             "head": "$NEW_BRANCH",
             "base": "$BRANCH"
