@@ -40,7 +40,7 @@ jobs:
             MAJOR="${BASH_REMATCH[1]}"
             MINOR="${BASH_REMATCH[2]}"
             PATCH="${BASH_REMATCH[3]}"
-            NEW_TAGS=("MAJOR" "$MAJOR.MINOR")
+            NEW_TAGS=("$MAJOR" "$MAJOR.MINOR")
             if [ "$MAJOR" == "0" ]; then
               NEW_TAGS=("$MAJOR.MINOR")
             fi
