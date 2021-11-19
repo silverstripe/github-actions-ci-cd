@@ -1,9 +1,5 @@
 name: js-upgrade
 
-# TODO:
-# - [ ] check for existing 'Update JS dependencies' PRs by github actions - if they exist, close old ones
-# - [ ] rename from 'js-upgrade' to 'update-js-dep' (upgrade to update) - will need to update module yml
-
 on:
   workflow_call:
 
@@ -109,7 +105,7 @@ jobs:
           git commit -m "${{ env.pr_title }}"
           git push --set-upstream origin $NEW_BRANCH
 
-          # Remove any existing pull-requests
+          # Remove any existing pull-requests via GitHub API
           JSON=$(curl https://api.github.com/repos/${{ github.repository }}/pulls)
           NUMBERS=$(echo $JSON | jq '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]") | .number')
           for NUMBER in $NUMBERS; do
@@ -121,6 +117,7 @@ jobs:
             {
               "state": "closed"
             }
+            echo "Closed old pull-request $NUMBER"
           EOF
           done
 
@@ -138,3 +135,4 @@ jobs:
             "base": "$BRANCH"
           }
           EOF
+          echo "New pull-request created"

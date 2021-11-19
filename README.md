@@ -1,4 +1,4 @@
-# Silverstripe GitHub Actions shared CI config
+# Silverstripe GitHub Actions shared CI/CD config
 
 Will use feature detection based on files in the root folder such as phpunit.xml.dist to build dynmaic matrix of tests to run
 
@@ -6,7 +6,7 @@ It's highly recommended that you use a tagged version (e.g. 0.2.0) to ensure sta
 
 This repository is currently in development and code on the `main` branch could change at any time, including taking on a whole new direction. It's expected that new functionality will be added.
 
-### Usage
+### CI Usage
 
 Create the following file in your module
 
@@ -19,6 +19,7 @@ name: Module CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   ci:
@@ -69,4 +70,22 @@ Omit the 'run_' prefix
 extra_jobs: |
   - php: '8.0'
     endtoend: true
+```
+
+### Update JS dependencies
+
+This workflow will automatically run `yarn upgrade` to update js dependencies and create a pull-request authored by a github-actions user. Non-admin modules will have the admin module installed in a sibling directory
+
+The cron will automatically run using the modules default branch on the first day of every 3rd month - Jan, Apr, Jul, Oct. The action can also be triggered manually.
+
+```
+name: Update JS deps
+
+on:
+  cron: '0 0 1 */3 *'
+  workflow_dispatch:
+
+jobs:
+  ci:
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/js-upgrade.yml@0.2.0
 ```
