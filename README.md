@@ -12,7 +12,7 @@ Create the following file in your module
 
 (subsitute the tagged version for the most recent tag from this module)
 
-*.github/workflows/main.yml*
+*.github/workflows/ci.yml*
 ```
 name: Module CI
 
@@ -78,6 +78,7 @@ This workflow will automatically run `yarn upgrade` to update js dependencies an
 
 The cron will automatically run using the modules default branch on the first day of every 3rd month - Jan, Apr, Jul, Oct. The action can also be triggered manually.
 
+*.github/workflows/update-js-deps.yml*
 ```
 name: Update JS deps
 
@@ -87,5 +88,5 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/js-upgrade.yml@0.2.0
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@0.2.0
 ```
