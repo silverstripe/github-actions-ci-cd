@@ -44,7 +44,7 @@ jobs:
             PATCH="${BASH_REMATCH[3]}"
             NEW_TAG="v${MAJOR}"
             if [ "$MAJOR" == "0" ]; then
-              NEW_TAGS=("v${MAJOR}.${MINOR}")
+              NEW_TAG=("v${MAJOR}.${MINOR}")
             fi
             # Delete old tag via GitHub API
             echo "Attempting to delete old $NEW_TAG tag (it may not exist yet)"
