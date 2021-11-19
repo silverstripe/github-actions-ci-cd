@@ -44,6 +44,7 @@ jobs:
             if [ "$MAJOR" == "0" ]; then
               NEW_TAGS=("$MAJOR.MINOR")
             fi
+            echo "NEW_TAGS is ${NEW_TAGS[@]}"
             for NEW_TAG in $NEW_TAGS; do
               # Delete any old tags via GitHub API
               curl -s \
