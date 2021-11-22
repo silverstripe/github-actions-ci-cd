@@ -1,0 +1,135 @@
+name: js-upgrade
+
+on:
+  workflow_call:
+
+jobs:
+  context:
+    name: Context
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Context
+        run: |
+          # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+          echo "github.base_ref: ${{ github.base_ref }}"
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.ref_name: ${{ github.ref_name }}"
+          echo "github.ref_type: ${{ github.ref_type }}"
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.sha: ${{ github.sha }}"
+          echo "job.status: ${{ job.status }}"
+          # https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
+          echo "github.event.issue.pull_request: ${{ github.event.issue.pull_request }}"
+          echo "github.event.issue.number: ${{ github.event.issue.number }}"
+          echo "github.event.repository.name: ${{ github.event.repository.name }}"
+
+  js-upgrade:
+    name: 'JS upgrade'
+    runs-on: ubuntu-latest
+    env:
+      pr_title: DEP Update JS dependencies
+      pr_desc: Automated yarn upgrade and yarn build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Read .nvmrc
+        run: echo ::set-output name=version::$(cat .nvmrc)
+        id: read-nvm
+
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ steps.read-nvm.outputs.version }}
+
+      - name: Install yarn
+        run: npm install --global yarn
+
+      - name: Install admin JS
+        if: github.event.repository.name != 'silverstripe-admin'
+        run: |
+          # Install admin js in sibling directory so shared components are available
+          DIR=$(pwd)
+          cd ..
+          git clone https://github.com/silverstripe/silverstripe-admin.git
+          mv silverstripe-admin admin
+          cd admin
+          git checkout 1
+          yarn install
+          cd $DIR
+      - name: Yarn upgrade
+        run: yarn upgrade
+
+      - name: Read package.json
+        id: package-json
+        run: |
+          # Read package.json to see if lint and test are runnable scripts
+          LINT=0
+          TEST=0
+          if [ "$(jq .scripts.lint? package.json)" != "null" ]; then LINT=1; fi
+          if [ "$(jq .scripts.test? package.json)" != "null" ]; then TEST=1; fi
+          echo "::set-output name=lint::$LINT"
+          echo "::set-output name=test::$TEST"
+          echo "LINT is $LINT"
+          echo "TEST is $TEST"
+
+      # The following 3 steps make up `yarn build`
+      # Splitting apart to make it easier to see where any failures originate from
+      - name: Yarn lint
+        if: steps.package-json.outputs.lint == 1
+        run: yarn lint
+
+      - name: Yarn test
+        if: steps.package-json.outputs.test == 1
+        run: yarn test
+
+      - name: Build JS with webpack
+        run: NODE_ENV=production node_modules/webpack/bin/webpack.js -p --bail --progress
+
+      - name: Git
+        run: |
+          # Run git commit, push and create pull-request as 'github-actions' user
+          # refs/heads/mybranch => mybranch
+          BRANCH=$(echo ${{ github.ref }} | cut -c 12-)
+          NEW_BRANCH=pulls/$BRANCH/update-js-$(date +%s)
+          git config --local user.name "github-actions"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b $NEW_BRANCH
+          git add .
+          git status
+          git commit -m "${{ env.pr_title }}"
+          git push --set-upstream origin $NEW_BRANCH
+          # Remove any existing pull-requests via GitHub API
+          JSON=$(curl https://api.github.com/repos/${{ github.repository }}/pulls)
+          NUMBERS=$(echo $JSON | jq '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]") | .number')
+          for NUMBER in $NUMBERS; do
+            curl -s \
+            -X PATCH https://api.github.com/repos/${{ github.repository }}/pulls/$NUMBER \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d @- << EOF
+            {
+              "state": "closed"
+            }
+            echo "Closed old pull-request $NUMBER"
+          EOF
+          done
+          # Create new pull-request via GitHub API
+          # https://docs.github.com/en/rest/reference/pulls#create-a-pull-request
+          curl -s \
+          -X POST https://api.github.com/repos/${{ github.repository }}/pulls \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -d @- << EOF
+          {
+            "title": "${{ env.pr_title }}",
+            "body": "${{ env.pr_desc }}",
+            "head": "$NEW_BRANCH",
+            "base": "$BRANCH"
+          }
+          EOF
+          echo "New pull-request created"
