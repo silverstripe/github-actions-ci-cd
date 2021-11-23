@@ -69,5 +69,5 @@ on:
   workflow_dispatch:
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@0.1.13
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@0.1.15
 ```
