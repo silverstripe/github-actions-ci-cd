@@ -88,9 +88,11 @@ jobs:
         run: yarn test
 
       - name: Build JS with webpack
+        if: always()
         run: NODE_ENV=production node_modules/webpack/bin/webpack.js -p --bail --progress
 
       - name: Git
+        if: always()
         run: |
           # Run git commit, push and create pull-request as 'github-actions' user
 
