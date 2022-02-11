@@ -26,17 +26,17 @@ on:
         type: string
         required: false
         default: |
-          - php: 7.3
+          - php: 7.4
             endtoend: true
           - php: 7.4
             js: true
-          - php: 7.3
+          - php: 7.4
             phpcoverage: true
           - php: 7.4
             phplinting: true
-          - php: 7.4
-            phpunit: true
           - php: 8.0
+            phpunit: true
+          - php: 8.1
             phpunit: true
       extra_jobs:
         type: string
@@ -85,8 +85,12 @@ jobs:
           extensions: yaml
       - name: generate matrix
         id: generate-matrix
+        env:
+          VERSION: ${{ inputs.version }}
+          DEFAULT_JOBS: ${{ inputs.default_jobs }}
+          EXTRA_JOBS: ${{ inputs.extra_jobs }}
         run: |
-          wget https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/matrix.php
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/matrix.php"
           touch inputs.yml
           echo "run_endtoend: ${{ inputs.run_endtoend }}" >> inputs.yml
           echo "run_js: ${{ inputs.run_js }}" >> inputs.yml
@@ -94,9 +98,9 @@ jobs:
           echo "run_phplinting: ${{ inputs.run_phplinting }}" >> inputs.yml
           echo "run_phpunit: ${{ inputs.run_phpunit }}" >> inputs.yml
           echo "default_jobs:" >> inputs.yml
-          echo "${{ inputs.default_jobs }}" >> inputs.yml
-          if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
-          if [[ "${{ inputs.extra_jobs }}" != "" ]]; then echo "${{ inputs.extra_jobs }}" >> inputs.yml; fi
+          echo "$DEFAULT_JOBS" >> inputs.yml
+          if [[ "$EXTRA_JOBS" != "" ]]; then echo "extra_jobs:" >> inputs.yml; fi
+          if [[ "$EXTRA_JOBS" != "" ]]; then echo "$EXTRA_JOBS" >> inputs.yml; fi
           cat inputs.yml
           MATRIX_JSON=$(php matrix.php)
           echo "::set-output name=matrix::${MATRIX_JSON}"
@@ -173,15 +177,17 @@ jobs:
 
       - name: Configure apache - endtoend test
         if: ${{ matrix.endtoend }}
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           # apache2 is installed and running by default in ubuntu
           # update dir.conf to use index.php as the primary index doc
-          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/dir.conf"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/dir.conf"
           sudo cp dir.conf /etc/apache2/mods-enabled/dir.conf
           rm dir.conf
           # this script will create a 000-default.conf file with the pwd as the DocumentRoot
-          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/000-default.conf"
-          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/apache2.php"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/000-default.conf"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/apache2.php"
           # TODO: this script pretty basic and could probably be replaced with cat 000-default.conf | tr oldtxt newtext
           php apache2.php
           sudo cp 000-default.conf /etc/apache2/sites-enabled/000-default.conf
@@ -195,6 +201,9 @@ jobs:
           echo "Apache has been configured"
 
       - name: Composer
+        env:
+          VERSION: ${{ inputs.version }}
+          COMPOSER_REQUIRE_EXTRA: ${{ inputs.composer_require_extra }}
         run: |
           if [ ! $(which php) ]; then echo "PHP not installed, skipping" && exit 0; fi
           # Update composer.json and install dependencies
@@ -220,8 +229,8 @@ jobs:
           if [ ${{ matrix.phplinting }} ]; then
             composer require silverstripe/cow:dev-master --no-update
           fi
-          if [ "${{ inputs.composer_require_extra }}" != "" ]; then
-            composer require ${{ inputs.composer_require_extra }} --no-update
+          if [ "$COMPOSER_REQUIRE_EXTRA" != "" ]; then
+            composer require "$COMPOSER_REQUIRE_EXTRA" --no-update
           fi
           # Need to use --prefer-source
           PHPV=${{ matrix.php }}
@@ -234,9 +243,11 @@ jobs:
           fi
 
       - name: Preparation
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           # Add .env file and create artifacts directory
-          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/.env"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/.env"
           # Artifacts directory must be created after composer install as it would remove the artifacts directory
           mkdir artifacts
           # Shouldn't dev/build flush here
@@ -253,13 +264,15 @@ jobs:
 
       - name: Tests - End to end
         if: ${{ matrix.endtoend == true }}
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           REF=$(php -r '$r="${{ github.ref }}";echo preg_replace("#^.+/.+/#","",$r);')
           # Run behat tests
           if [ ! -f behat.yml ]; then echo "behat.yml missing" && exit 1; fi
           # this script will update behat.yml to work with headless chrome
-          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat-headless.yml"
-          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/${{ inputs.version }}/.github/things/behat.php"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/behat-headless.yml"
+          wget "https://raw.githubusercontent.com/silverstripe/github-actions-ci-cd/$VERSION/.github/things/behat.php"
           php behat.php
           rm behat.php
           rm behat-headless.yml
