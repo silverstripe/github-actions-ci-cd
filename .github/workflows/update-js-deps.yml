@@ -1,0 +1,103 @@
+name: js-upgrade
+
+on:
+  workflow_call:
+
+jobs:
+  js-upgrade:
+    name: 'JS upgrade'
+    runs-on: ubuntu-latest
+    env:
+      pr_title: DEP Update JS dependencies
+      pr_desc: Automated yarn upgrade and yarn build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Read .nvmrc
+        run: echo ::set-output name=version::$(cat .nvmrc)
+        id: read-nvm
+
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ steps.read-nvm.outputs.version }}
+
+      - name: Install yarn
+        run: npm install --global yarn
+
+      - name: Install admin JS
+        if: github.event.repository.name != 'silverstripe-admin'
+        run: |
+          # Install admin js in sibling directory so shared components are available
+          DIR=$(pwd)
+          cd ..
+          git clone https://github.com/silverstripe/silverstripe-admin.git admin
+          cd admin
+          git checkout 1
+          yarn install
+          cd $DIR
+      - name: Yarn upgrade
+        run: yarn upgrade
+
+      - name: Read package.json
+        id: package-json
+        run: |
+          # Read package.json to see if lint and test are runnable scripts
+          LINT=0
+          TEST=0
+          if [ "$(jq .scripts.lint? package.json)" != "null" ]; then LINT=1; fi
+          if [ "$(jq .scripts.test? package.json)" != "null" ]; then TEST=1; fi
+          echo "::set-output name=lint::$LINT"
+          echo "::set-output name=test::$TEST"
+          echo "LINT is $LINT"
+          echo "TEST is $TEST"
+
+      # The following 3 steps make up `yarn build`
+      # Splitting apart to make it easier to see where any failures originate from
+      - name: Yarn lint
+        if: steps.package-json.outputs.lint == 1
+        run: yarn lint
+
+      - name: Yarn test
+        if: steps.package-json.outputs.test == 1
+        run: yarn test
+
+      - name: Build JS with webpack
+        # always run this and subsequent steps even if yarn.lint/yarn.test fails so that pull-request is
+        # created which will result in a red pull-request build so it's easy to see where things are at
+        if: always()
+        run: NODE_ENV=production node_modules/webpack/bin/webpack.js -p --bail --progress
+
+      - name: Remove any old pull-requests
+        if: always()
+        run: |
+          JSON=$(curl https://api.github.com/repos/${{ github.repository }}/pulls)
+          NUMBERS=$(echo $JSON | jq '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]") | .number')
+          for NUMBER in $NUMBERS; do
+            curl -s \
+            -X PATCH https://api.github.com/repos/${{ github.repository }}/pulls/$NUMBER \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -d @- << EOF
+            {
+              "state": "closed"
+            }
+            echo "Closed old pull-request $NUMBER"
+          EOF
+          done
+
+      # Convert refs/heads/mybranch to mybranch
+      - name: Generate branch name
+        if: always()
+        id: generate-branch-name
+        run: echo ::set-output name=branch::$(echo ${{ github.ref }} | cut -c 12-)
+
+      - name: Git
+        if: always()
+        uses: emteknetnz/gha-pull-request@main
+        with:
+          branch: ${{ steps.generate-branch-name.outputs.branch }}
+          title: ${{ env.pr_title }}
+          description: ${{ env.pr_desc }}
