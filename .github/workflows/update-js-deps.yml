@@ -38,8 +38,13 @@ jobs:
           git checkout 1
           yarn install
           cd $DIR
-      - name: Yarn upgrade
-        run: yarn upgrade
+
+      # Use `yarn install` rather than `yarn upgrade` to prevent the following error:
+      # "error Outdated lockfile. Please run `yarn install` and try again."
+      - name: Update yarn.lock
+        run: |
+          if [ -f yarn.lock ]; then rm yarn.lock; fi
+          yarn install
 
       - name: Read package.json
         id: package-json

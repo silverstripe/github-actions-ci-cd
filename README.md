@@ -2,7 +2,7 @@
 
 By default will run Silverstripe Unit tests and PHPCS code linting.
 
-It's highly recommended that you use a tagged version (e.g. 0.1.2) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
+It's highly recommended that you use a tagged version (e.g. 0.1.16) to ensure stability of your builds. If you have a relatively simple build that you have no intention of ever making more complex e.g. only phpunit tests using phpunit.xml.dist, then this is probably all you need for long term use.
 
 This repository is currently in development and code on the `main` branch could change at any time, including taking on a whole new direction. It's expected that new functionality will be added.
 
@@ -22,7 +22,7 @@ on:
 
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.15
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.16
 ```
 
 Use the following if your module does not have a `phpcs.xml.dist` file
@@ -33,7 +33,7 @@ Use the following if your module does not have a `phpcs.xml.dist` file
 ```
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.15
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/ci.yml@0.1.16
     with:
       run_phplinting: false
 ```
@@ -69,5 +69,5 @@ on:
   workflow_dispatch:
 jobs:
   ci:
-    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@0.1.15
+    uses: silverstripe/github-actions-ci-cd/.github/workflows/update-js-deps.yml@0.1.16
 ```
