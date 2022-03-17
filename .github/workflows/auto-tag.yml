@@ -1,0 +1,44 @@
+# Non-shared workflow that only runs on the github-actions-ci-cd module to automatically
+# delete and re-release tags so that other modules can use something similar to carets (^)
+# Caret (^) requirements are not supported by github-action e.g. @^2 does not work
+# The action will tag v2 when 2.5.0 is released and v0.3 when 0.3.5 is released
+# The new 'v' tag will point to the same sha  e.g. the sha of v2 will equal the sha of 2.5.0
+# This allows modules to include workflows using the @v2 or @v0.3 syntax
+# Using the 'v' prefix to avoid confusion with the '2' branch naming convention that Silverstripe uses
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  auto-tag:
+    name: Auto-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate tag name
+        id: generate_tag_name
+        run: |
+          # refs/tags/0.1.23 => 0.1.23
+          TAG=$(echo ${{ github.ref }} | cut -c 11-)
+          if [[ $TAG =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            NEW_TAG="v${MAJOR}"
+            if [ "$MAJOR" == "0" ]; then
+              NEW_TAG=("v${MAJOR}.${MINOR}")
+            fi
+            echo "Tag is $NEW_TAG"
+            echo "::set-output name=tag::$NEW_TAG"
+          else
+            echo "Tag does not match 1.2.3 format, exiting"
+            exit 1
+          fi
+      - name: Add tag to repo
+        uses: emteknetnz/gha-tag-release@main
+        with:
+          sha: ${{ github.sha }}
+          tag: ${{ steps.generate_tag_name.outputs.tag }}
+          delete_existing: true
+          release: false
