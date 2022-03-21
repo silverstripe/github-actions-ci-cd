@@ -92,7 +92,7 @@ jobs:
           EOF
             echo "Closed old pull-request $NUMBER"
           done
-          BRANCHES=$(echo $JSON | jq -r '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]" | .head.ref')
+          BRANCHES=$(echo $JSON | jq -r '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]") | .head.ref')
           for BRANCH in $BRANCHES; do
             if [[ "$BRANCH" =~ ^pulls/[0-9\.]+/update\-js\-[0-9]+$ ]]; then
               git push origin --delete "$BRANCH"
