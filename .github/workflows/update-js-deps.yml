@@ -75,7 +75,7 @@ jobs:
         if: always()
         run: NODE_ENV=production node_modules/webpack/bin/webpack.js -p --bail --progress
 
-      - name: Remove any old pull-requests and branches
+      - name: Remove any old pull-requests
         if: always()
         run: |
           JSON=$(curl https://api.github.com/repos/${{ github.repository }}/pulls)
@@ -92,7 +92,12 @@ jobs:
           EOF
             echo "Closed old pull-request $NUMBER"
           done
-          BRANCHES=$(echo $JSON | jq -r '.[] | select(.title=="${{ env.pr_title }}" and .user.login=="github-actions[bot]") | .head.ref')
+
+      - name: Remove any old branches
+        if: always()
+        run: |
+          JSON=$(curl https://api.github.com/repos/${{ github.repository }}/branches)
+          BRANCHES=$(echo $JSON | jq -r '.[] | .name | select(.|test("^pulls\/[0-9]\/update-js-[0-9]{10}$"))')
           for BRANCH in $BRANCHES; do
             if [[ "$BRANCH" =~ ^pulls/[0-9\.]+/update\-js\-[0-9]+$ ]]; then
               git push origin --delete "$BRANCH"
