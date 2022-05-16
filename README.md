@@ -65,7 +65,9 @@ The cron will automatically run using the modules default branch on the first da
 ```
 name: Update JS deps
 on:
-  cron: '0 0 1 */3 *'
+  # Run on a schedule once per quarter
+  schedule:
+    - cron:  '0 0 1 */3 *'
   workflow_dispatch:
 jobs:
   ci:
