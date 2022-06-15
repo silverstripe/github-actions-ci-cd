@@ -1,4 +1,10 @@
-# Silverstripe GitHub Actions shared CI config
+# Deprecated
+
+This module is now deprecated, though it will remain operational for the foreseeable future.
+
+You're encouraged to now use its replacement [gha-ci](https://github.com/silverstripe/gha-ci)
+
+## Silverstripe GitHub Actions shared CI config
 
 By default will run Silverstripe Unit tests and PHPCS code linting.
 
